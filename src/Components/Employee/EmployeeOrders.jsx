@@ -1,0 +1,180 @@
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import { Box, IconButton, Tab, Tabs, Typography } from "@mui/material";
+import axios from "axios";
+import PropTypes from "prop-types";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import server from "../server";
+import EmployeeOrderCard from "./EmployeeOrderCard";
+
+const header = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "20px",
+  backgroundColor: "#fff",
+  borderBottom: "1px solid #EAEAEA",
+};
+
+const arrowStyle = {
+  position: "absolute",
+  left: "20px",
+};
+
+const CategoryTitle = {
+  fontWeight: "600",
+  fontFamily: "Quicksand",
+};
+
+function TabPanel(props) {
+  const { children, value, index, ...other } = props;
+  return (
+    <div
+      role="tabpanel"
+      hidden={value !== index}
+      id={`simple-tabpanel-${index}`}
+      aria-labelledby={`simple-tab-${index}`}
+      {...other}
+    >
+      {value === index && (
+        <Box sx={{ p: 3 }}>
+          <Typography>{children}</Typography>
+        </Box>
+      )}
+    </div>
+  );
+}
+
+TabPanel.propTypes = {
+  children: PropTypes.node,
+  index: PropTypes.number.isRequired,
+  value: PropTypes.number.isRequired,
+};
+
+function a11yProps(index) {
+  return {
+    id: `simple-tab-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
+  };
+}
+
+const Orders = (props) => {
+  const location = useLocation();
+  const [value, setValue] = useState(
+    location?.state?.value ? location?.state?.value : 0,
+  );
+
+  const [orders, setOrders] = useState([]);
+
+  const navigate = useNavigate();
+
+  const getOrders = async () => {
+    const data = localStorage.getItem("employee");
+    const employeeData = JSON.parse(data);
+    const result = await axios.get(
+      `${server}/employee-orders/${employeeData._id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      },
+    );
+    const arr = result.data;
+    setOrders(arr);
+  };
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  useEffect(() => {
+    getOrders();
+  }, []);
+
+  useEffect(() => {}, [orders]);
+
+  return (
+    <Box sx={{ marginBottom: "100px", width: "100%" }}>
+      <Box sx={header}>
+        <Box sx={arrowStyle}>
+          <Link to="/employee-home">
+            <IconButton>
+              <ArrowBackRoundedIcon />
+            </IconButton>
+          </Link>
+        </Box>
+        <Typography variant="h6" sx={CategoryTitle}>
+          Fullfillment Orders
+        </Typography>
+      </Box>
+      <Box sx={{ width: "100%" }}>
+        <Box
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            aria-label="basic tabs example"
+            textColor="secondary"
+            indicatorColor="primary"
+            sx={{
+              width: "100%",
+              justifyContent: "space-between",
+              display: "flex",
+            }}
+          >
+            <Tab sx={{ width: "50%" }} label="Pending" {...a11yProps(0)} />
+            <Tab sx={{ width: "50%" }} label="for Dispatch" {...a11yProps(1)} />
+          </Tabs>
+        </Box>
+        <Box>
+          <TabPanel value={value} index={0} sx={{ overflow: "auto" }}>
+            {orders &&
+              orders.map((currorder, i) => {
+                return (
+                  currorder.status === "pending" && (
+                    <EmployeeOrderCard
+                      orderdetails={currorder}
+                      value={value}
+                      key={i}
+                      sx={{ padding: "50px" }}
+                    />
+                  )
+                );
+              })}
+          </TabPanel>
+        </Box>
+        <TabPanel
+          value={value}
+          index={1}
+          sx={{ overflow: "auto" }}
+          tabindicatorprops={{
+            style: {
+              backgroundColor: "#5EC401",
+            },
+          }}
+        >
+          {orders &&
+            orders.map((currorder, i) => {
+              return (
+                currorder.status === "inprogress" && (
+                  <EmployeeOrderCard
+                    orderdetails={currorder}
+                    value={value}
+                    key={i}
+                  />
+                )
+              );
+            })}
+        </TabPanel>
+      </Box>
+    </Box>
+  );
+};
+
+export default Orders;
