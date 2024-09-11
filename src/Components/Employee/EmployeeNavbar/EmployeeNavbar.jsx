@@ -39,7 +39,7 @@ const Navbar = () => {
   return (
     <Box sx={NavbarContainer}>
       <Box sx={NavbarDiv}>
-        <NavLink
+        {/* <NavLink
           to="/employee-orders"
           style={{ textDecoration: "none" }}
           className={({ isActive }) =>
@@ -64,7 +64,7 @@ const Navbar = () => {
             </Box>
             <Cart />
           </Box>
-        </NavLink>
+        </NavLink> */}
         <NavLink
           to="/employee-order"
           style={{ textDecoration: "none" }}
