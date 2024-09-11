@@ -303,9 +303,7 @@ const EmployeeOrder = () => {
       console.log("turned off the camera")
       return showTurnedOffCamera()
     }
-    // navigate("/employee-orders")
-    //folloiwng code is setup for the temporary
-    navigate("/employee-home")
+    navigate("/employee-orders")
   }
 
   return (

@@ -1,11 +1,11 @@
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
-import { Box, IconButton, Tab, Tabs, Typography } from "@mui/material";
-import axios from "axios";
-import PropTypes from "prop-types";
-import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import server from "../server";
-import EmployeeOrderCard from "./EmployeeOrderCard";
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded"
+import { Box, IconButton, Tab, Tabs, Typography } from "@mui/material"
+import axios from "axios"
+import PropTypes from "prop-types"
+import { useEffect, useState } from "react"
+import { Link, useLocation, useNavigate } from "react-router-dom"
+import server from "../server"
+import EmployeeOrderCard from "./EmployeeOrderCard"
 
 const header = {
   display: "flex",
@@ -14,20 +14,20 @@ const header = {
   padding: "20px",
   backgroundColor: "#fff",
   borderBottom: "1px solid #EAEAEA",
-};
+}
 
 const arrowStyle = {
   position: "absolute",
   left: "20px",
-};
+}
 
 const CategoryTitle = {
   fontWeight: "600",
   fontFamily: "Quicksand",
-};
+}
 
 function TabPanel(props) {
-  const { children, value, index, ...other } = props;
+  const { children, value, index, ...other } = props
   return (
     <div
       role="tabpanel"
@@ -42,56 +42,60 @@ function TabPanel(props) {
         </Box>
       )}
     </div>
-  );
+  )
 }
 
 TabPanel.propTypes = {
   children: PropTypes.node,
   index: PropTypes.number.isRequired,
   value: PropTypes.number.isRequired,
-};
+}
 
 function a11yProps(index) {
   return {
     id: `simple-tab-${index}`,
     "aria-controls": `simple-tabpanel-${index}`,
-  };
+  }
 }
 
 const Orders = (props) => {
-  const location = useLocation();
+  const location = useLocation()
   const [value, setValue] = useState(
-    location?.state?.value ? location?.state?.value : 0,
-  );
+    location?.state?.value ? location?.state?.value : 0
+  )
 
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState([])
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const getOrders = async () => {
-    const data = localStorage.getItem("employee");
-    const employeeData = JSON.parse(data);
-    const result = await axios.get(
-      `${server}/employee-orders/${employeeData._id}`,
-      {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      },
-    );
-    const arr = result.data;
-    setOrders(arr);
-  };
+    const data = localStorage.getItem("employee")
+    const employeeData = JSON.parse(data)
+    try {
+      const result = await axios.get(
+        `${server}/employee-orders/${employeeData._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+      const arr = result.data
+      setOrders(arr)
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
+    setValue(newValue)
+  }
 
   useEffect(() => {
-    getOrders();
-  }, []);
+    getOrders()
+  }, [])
 
-  useEffect(() => {}, [orders]);
+  useEffect(() => {}, [orders])
 
   return (
     <Box sx={{ marginBottom: "100px", width: "100%" }}>
@@ -145,7 +149,7 @@ const Orders = (props) => {
                       sx={{ padding: "50px" }}
                     />
                   )
-                );
+                )
               })}
           </TabPanel>
         </Box>
@@ -169,12 +173,12 @@ const Orders = (props) => {
                     key={i}
                   />
                 )
-              );
+              )
             })}
         </TabPanel>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default Orders;
+export default Orders

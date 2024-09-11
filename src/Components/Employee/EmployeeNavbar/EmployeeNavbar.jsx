@@ -2,7 +2,7 @@ import { Box } from "@mui/material"
 import { createContext } from "react"
 import { NavLink } from "react-router-dom"
 import { ReactComponent as Account } from "../../../assets/account.svg"
-// import { ReactComponent as Cart } from "../../../assets/cart.svg"
+import { ReactComponent as Cart } from "../../../assets/cart.svg"
 import { ReactComponent as ScannerImg } from "../../../assets/qr-code-scan-icon.svg"
 
 export const NavBarContext = createContext()
@@ -39,7 +39,7 @@ const Navbar = () => {
   return (
     <Box sx={NavbarContainer}>
       <Box sx={NavbarDiv}>
-        {/* <NavLink
+        <NavLink
           to="/employee-orders"
           style={{ textDecoration: "none" }}
           className={({ isActive }) =>
@@ -64,7 +64,7 @@ const Navbar = () => {
             </Box>
             <Cart />
           </Box>
-        </NavLink> */}
+        </NavLink>
         <NavLink
           to="/employee-order"
           style={{ textDecoration: "none" }}
