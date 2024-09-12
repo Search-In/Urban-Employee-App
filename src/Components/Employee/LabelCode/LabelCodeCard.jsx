@@ -1,38 +1,38 @@
-import CloseIcon from "@mui/icons-material/Close";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardMedia from "@mui/material/CardMedia";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import { useRef, useState } from "react";
+import CloseIcon from "@mui/icons-material/Close"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import Card from "@mui/material/Card"
+import CardContent from "@mui/material/CardContent"
+import CardMedia from "@mui/material/CardMedia"
+import IconButton from "@mui/material/IconButton"
+import TextField from "@mui/material/TextField"
+import Typography from "@mui/material/Typography"
+import { useRef, useState } from "react"
 
 const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
   const [labelArea = "", labelBay = "", labelRack = "", labelShelf = ""] =
-    product?.labelcode?.split("-") || [];
-  const [area, setArea] = useState(labelArea || "");
-  const [bayNo, setBayNo] = useState(labelBay || "");
-  const [rack, setRack] = useState(labelRack || "");
-  const [shelf, setShelf] = useState(labelShelf || "");
+    product?.labelcode?.split("-") || []
+  const [area, setArea] = useState(labelArea || "")
+  const [bayNo, setBayNo] = useState(labelBay || "")
+  const [rack, setRack] = useState(labelRack || "")
+  const [shelf, setShelf] = useState(labelShelf || "")
 
-  const areaRef = useRef(null);
-  const bayNoRef = useRef(null);
-  const rackRef = useRef(null);
-  const shelfRef = useRef(null);
+  const areaRef = useRef(null)
+  const bayNoRef = useRef(null)
+  const rackRef = useRef(null)
+  const shelfRef = useRef(null)
 
   const handleKeyPress = (e, nextRef) => {
     if (e.key === "Enter") {
-      e.preventDefault(); // Prevent the default form submission behavior
-      nextRef.current?.focus(); // Focus on the next input field
+      e.preventDefault() // Prevent the default form submission behavior
+      nextRef.current?.focus() // Focus on the next input field
     }
-  };
+  }
 
   const handleLabelCodeChange = () => {
-    const labelCode = `${area}-${bayNo}-${rack}-${shelf}`;
-    onLabelCodeChange(product._id, labelCode);
-  };
+    const labelCode = `${area}-${bayNo}-${rack}-${shelf}`
+    onLabelCodeChange(product._id, labelCode)
+  }
 
   return (
     <Card
@@ -165,8 +165,8 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
             onChange={(e) => setShelf(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                e.preventDefault();
-                handleLabelCodeChange();
+                e.preventDefault()
+                handleLabelCodeChange()
               }
             }}
             inputProps={{ maxLength: 2 }}
@@ -191,10 +191,10 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
         </div>
       </Box>
     </Card>
-  );
-};
+  )
+}
 
-export default LabelCodeCard;
+export default LabelCodeCard
 
 const styles = {
   priceContainer: {
@@ -215,4 +215,4 @@ const styles = {
     fontSize: "20px",
     fontFamily: "Poppins",
   },
-};
+}

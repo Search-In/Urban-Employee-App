@@ -34,6 +34,18 @@ const NavItemStyle = {
   color: "black",
 }
 
+const notactivenavbarclass = {
+  textDecoration: "none",
+  backgroundColor: "#ffffff",
+}
+
+const activenavbarclass = {
+  textDecoration: "none",
+  backgroundColor: "#5ec401",
+  color: "#ffffff",
+  borderRadius: "50%",
+}
+
 const Navbar = () => {
   const items = 0
   return (
@@ -41,9 +53,8 @@ const Navbar = () => {
       <Box sx={NavbarDiv}>
         <NavLink
           to="/employee-orders"
-          style={{ textDecoration: "none" }}
-          className={({ isActive }) =>
-            isActive ? "active-navbar-class" : "not-active-navbar-class"
+          style={({ isActive }) =>
+            isActive ? activenavbarclass : notactivenavbarclass
           }
         >
           <Box sx={NavItemStyle} className="nav-items">
@@ -67,9 +78,8 @@ const Navbar = () => {
         </NavLink>
         <NavLink
           to="/employee-order"
-          style={{ textDecoration: "none" }}
-          className={({ isActive }) =>
-            isActive ? "active-navbar-class" : "not-active-navbar-class"
+          style={({ isActive }) =>
+            isActive ? activenavbarclass : notactivenavbarclass
           }
         >
           <Box sx={NavItemStyle} className="nav-items">
@@ -78,9 +88,8 @@ const Navbar = () => {
         </NavLink>
         <NavLink
           to="/employee-home"
-          style={{ textDecoration: "none" }}
-          className={({ isActive }) =>
-            isActive ? "active-navbar-class" : "not-active-navbar-class"
+          style={({ isActive }) =>
+            isActive ? activenavbarclass : notactivenavbarclass
           }
         >
           <Box sx={NavItemStyle} className="nav-items">

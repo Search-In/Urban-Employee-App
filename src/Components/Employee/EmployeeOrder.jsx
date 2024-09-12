@@ -16,8 +16,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom"
 import server from "../server"
 // import EmployeeScanner from "./EmployeeScanner";
 import BarcodeScanner from "./BarcodeScanner"
-import Instructions from "./LabeCode/Instructions"
-import LabelCodeCard from "./LabeCode/LabelCodeCard"
+import Instructions from "./LabelCode/Instructions"
+import LabelCodeCard from "./LabelCode/LabelCodeCard"
 import ProductCard from "./ProductCard"
 
 const EmployeeOrder = () => {
@@ -41,6 +41,7 @@ const EmployeeOrder = () => {
 
   const getProductByBarcode = async (barcode) => {
     try {
+      setOpenLabelCard(false)
       const result = await axios.get(`${server}/products/barcode/${barcode}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -302,8 +303,10 @@ const EmployeeOrder = () => {
     if (isScanning) {
       console.log("turned off the camera")
       return showTurnedOffCamera()
+    } else if (orderId) {
+      navigate("/employee-orders")
     }
-    navigate("/employee-orders")
+    navigate("/employee-home")
   }
 
   return (
