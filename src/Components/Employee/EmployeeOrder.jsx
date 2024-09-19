@@ -154,7 +154,10 @@ const EmployeeOrder = () => {
       let foundProduct = false
       const updatedProducts = await Promise.all(
         allProducts.map(async (product) => {
-          if (product?.productId?.barcode === barcode) {
+          if (
+            Array.isArray(product?.productId?.barcode) &&
+            product.productId.barcode.includes(barcode)
+          ) {
             foundProduct = true
             if (product.scannedCount >= product.itemCount) {
               showWarningSnackbar()
