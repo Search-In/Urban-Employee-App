@@ -24,6 +24,7 @@ const EmployeeOrder = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { orderId } = location.state || {}
+  console.log("Order Id from location is ", orderId)
 
   const [allProducts, setProducts] = useState([])
   const [openSnackbar, setOpenSnackbar] = useState(false)
@@ -316,10 +317,12 @@ const EmployeeOrder = () => {
     if (isScanning) {
       console.log("turned off the camera")
       return showTurnedOffCamera()
-    } else if (orderId) {
-      navigate("/employee-orders")
     }
-    navigate("/employee-home")
+    if (orderId) {
+      navigate("/employee-orders")
+    } else {
+      navigate("/employee-home")
+    }
   }
 
   return (
