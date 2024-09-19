@@ -151,9 +151,19 @@ const EmployeeOrder = () => {
 
   const handleScan = async (barcode) => {
     if (orderId) {
+      console.log("handlescan products ", allProducts)
+
       let foundProduct = false
       const updatedProducts = await Promise.all(
         allProducts.map(async (product) => {
+          console.log(
+            "first condition is Array.isArray(product?.productId?.barcode) ",
+            Array.isArray(product?.productId?.barcode)
+          )
+          console.log(
+            "second condtion is   product.productId.barcode.includes(barcode)",
+            product.productId.barcode.includes(barcode)
+          )
           if (
             Array.isArray(product?.productId?.barcode) &&
             product.productId.barcode.includes(barcode)
