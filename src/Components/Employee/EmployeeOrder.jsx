@@ -24,6 +24,7 @@ const EmployeeOrder = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { orderId } = location.state || {}
+  console.log("Order Id from location is ", orderId)
 
   const [allProducts, setProducts] = useState([])
   const [openSnackbar, setOpenSnackbar] = useState(false)
@@ -151,9 +152,19 @@ const EmployeeOrder = () => {
 
   const handleScan = async (barcode) => {
     if (orderId) {
+      console.log("handlescan products ", allProducts)
+
       let foundProduct = false
       const updatedProducts = await Promise.all(
         allProducts.map(async (product) => {
+          console.log(
+            "first condition is Array.isArray(product?.productId?.barcode) ",
+            Array.isArray(product?.productId?.barcode)
+          )
+          console.log(
+            "second condtion is   product.productId.barcode.includes(String(barcode))",
+            product.productId.barcode.includes(String(barcode))
+          )
           if (
             Array.isArray(product?.productId?.barcode) &&
             product.productId.barcode.includes(String(barcode))
