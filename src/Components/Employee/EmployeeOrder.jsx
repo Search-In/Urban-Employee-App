@@ -152,41 +152,35 @@ const EmployeeOrder = () => {
 
   const handleScan = async (barcode) => {
     if (orderId) {
-      const productBarcode = String(barcode)
-      console.log("handlescan products ", allProducts)
-      console.log("Barcod is ", barcode)
+      // Convert the scanned barcode to a string and trim any extra whitespace
+      const productBarcode = String(barcode).trim()
 
       let foundProduct = false
       const updatedProducts = await Promise.all(
         allProducts.map(async (product) => {
-          console.log(
-            "product.productId.barcode is ",
-            product.productId.barcode
-          )
-          console.log(
-            "first condition is Array.isArray(product?.productId?.barcode) ",
-            Array.isArray(product?.productId?.barcode)
-          )
-          console.log(
-            "second condtion is   product.productId.barcode.includes(String(barcode))",
-            product.productId.barcode.includes(productBarcode)
-          )
-          if (
-            Array.isArray(product?.productId?.barcode) &&
-            product.productId.barcode.includes(productBarcode)
-          ) {
+          const productBarcodes = Array.isArray(product.productId.barcode)
+            ? product.productId.barcode.map((b) => String(b).trim())
+            : []
+
+          console.log("Product barcodes after conversion:", productBarcodes)
+          console.log("Scanned barcode:", `"${productBarcode}"`)
+
+          // Check if the product barcode array includes the scanned barcode
+          if (productBarcodes.includes(productBarcode)) {
             foundProduct = true
+
             if (product.scannedCount >= product.itemCount) {
               showWarningSnackbar()
               return product
             }
+
             try {
               const newScannedCount = product.scannedCount + 1
               const isScanned = newScannedCount === product.itemCount
-              const result = await axios.patch(
+              await axios.patch(
                 `${server}/orders/update-scannedCount?orderId=${orderId}&productId=${product.productId._id}`,
                 {
-                  scannedCount: product.scannedCount + 1,
+                  scannedCount: newScannedCount,
                   isScanned: isScanned,
                 },
                 {
@@ -199,7 +193,6 @@ const EmployeeOrder = () => {
               )
 
               showProductScan()
-
               setTimeout(() => {
                 setScanResult("")
               }, 3000)
@@ -211,12 +204,13 @@ const EmployeeOrder = () => {
               }
             } catch (error) {
               console.error(error)
-              return product // Return the product unchanged in case of an error
+              return product
             }
           }
           return product
         })
       )
+
       if (!foundProduct) {
         showProductNotFound()
       }
