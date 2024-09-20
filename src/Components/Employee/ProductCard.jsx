@@ -1,8 +1,8 @@
-import { Avatar, Box, Paper, Typography } from "@mui/material";
-import verifyIcon from "../../../src/assets/verifyimage.png";
+import { Avatar, Box, Paper, Typography } from "@mui/material"
+import verifyIcon from "../../../src/assets/verifyimage.png"
 
 const ProductCard = ({ product }) => {
-  const isScanned = product.scannedCount >= product.itemCount;
+  const isScanned = product.scannedCount >= product.itemCount
   return (
     <Paper
       elevation={1}
@@ -33,6 +33,14 @@ const ProductCard = ({ product }) => {
             <Typography sx={styles.salePriceText}>
               ₹{product.productId.price?.toFixed(2)}
             </Typography>
+            <Typography sx={styles.variantText}>
+              {product?.variant &&
+                `${
+                  product.variant >= 100
+                    ? product.variant + " gm"
+                    : product.variant + " Kg"
+                }`}
+            </Typography>
           </div>
           <div style={styles.labelCodeDiv}>
             <Typography variant="body1" sx={styles.labelCode}>
@@ -53,8 +61,8 @@ const ProductCard = ({ product }) => {
         </Typography>
       </Box>
     </Paper>
-  );
-};
+  )
+}
 
 const styles = {
   card: {
@@ -141,6 +149,17 @@ const styles = {
     fontSize: "20px",
     fontFamily: "Poppins",
   },
+  variantText: {
+    position: "relative",
+    top: 5,
+    left: 25,
+    color: "rgba(33, 37, 41, 0.7)",
+    fontWeight: "600",
+    margin: "0",
+    fontSize: "14px",
+    fontFamily: "Poppins, sans-serif",
+    lineHeight: "20px",
+  },
   scannedCount: {
     position: "absolute",
     top: "62px",
@@ -164,6 +183,6 @@ const styles = {
     marginLeft: "5px",
     textAlign: "center",
   },
-};
+}
 
-export default ProductCard;
+export default ProductCard
