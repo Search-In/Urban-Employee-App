@@ -303,10 +303,8 @@ const EmployeeOrder = () => {
         return allProducts.reduce((total, product) => {
           console.log("map product ", product)
           const variantMultiplier = product?.variant ? product.variant : 1
-          return (
-            total +
-            product.scannedCount * (product?.price || 0) * variantMultiplier
-          )
+          console.log("variant mulitplie ri ", variantMultiplier)
+          return total + product.scannedCount * (product?.price || 0)
         }, 0)
       }
       const value = getTotalPrice()
