@@ -304,7 +304,14 @@ const EmployeeOrder = () => {
           console.log("map product ", product)
           const variantMultiplier = product?.variant ? product.variant : 1
           console.log("variant mulitplie ri ", variantMultiplier)
-          return total + product.scannedCount * (product?.price || 0)
+          // If the variant is greater than or equal to 100 (grams), convert to kilograms
+          if (variantMultiplier >= 100) {
+            variantMultiplier = variantMultiplier / 1000 // Convert grams to kg
+          }
+          return (
+            total +
+            product.scannedCount * (product?.price || 0) * variantMultiplier
+          )
         }, 0)
       }
       const value = getTotalPrice()
