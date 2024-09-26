@@ -302,7 +302,7 @@ const EmployeeOrder = () => {
       const getTotalPrice = () => {
         return allProducts.reduce((total, product) => {
           console.log("map product ", product)
-          const variantMultiplier = product?.variant ? product.variant : 1
+          let variantMultiplier = product?.variant ? product.variant : 1
           console.log("variant mulitplie ri ", variantMultiplier)
           // If the variant is greater than or equal to 100 (grams), convert to kilograms
           if (variantMultiplier >= 100) {
