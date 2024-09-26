@@ -3,6 +3,7 @@ import verifyIcon from "../../../src/assets/verifyimage.png"
 
 const ProductCard = ({ product }) => {
   const isScanned = product.scannedCount >= product.itemCount
+  console.log("pprice", product?.price)
   return (
     <Paper
       elevation={1}
@@ -31,7 +32,7 @@ const ProductCard = ({ product }) => {
               </Typography>
             )}
             <Typography sx={styles.salePriceText}>
-              ₹{product.productId.price?.toFixed(2)}
+              ₹{product?.price?.toFixed(2)}
             </Typography>
             <Typography sx={styles.variantText}>
               {product?.variant &&

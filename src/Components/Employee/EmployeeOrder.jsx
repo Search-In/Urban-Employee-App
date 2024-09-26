@@ -84,7 +84,7 @@ const EmployeeOrder = () => {
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     })
-
+    console.log("result is ", result)
     setOrderInfo({
       message: result?.data?.message,
       orderNo: result?.data?.orderId,
@@ -301,11 +301,16 @@ const EmployeeOrder = () => {
 
       const getTotalPrice = () => {
         return allProducts.reduce((total, product) => {
-          return total + product.scannedCount * (product?.price || 0)
+          console.log("map product ", product)
+          const variantMultiplier = product?.variant ? product.variant : 1
+          return (
+            total +
+            product.scannedCount * (product?.price || 0) * variantMultiplier
+          )
         }, 0)
       }
       const value = getTotalPrice()
-
+      console.log("value ", value)
       setOrderInfo((prevOrderInfo) => ({
         ...prevOrderInfo,
         scannedAmout: value,
