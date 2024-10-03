@@ -11,6 +11,7 @@ const ProductCard = ({ product }) => {
     >
       <Box sx={styles.container}>
         {/* Product Image */}
+
         <Box>
           <Avatar
             alt={product.productId?.name}
@@ -19,6 +20,12 @@ const ProductCard = ({ product }) => {
             variant="square"
           />
           <Typography sx={styles.labelId}>Product Label:</Typography>
+          <Box sx={styles.scanPriceTextBox}>
+            <Typography sx={styles.scanPriceText}>
+              ₹{product?.productId?.price?.toFixed(2)}
+            </Typography>
+            <Typography sx={styles.scanRate}> Scan Rate</Typography>
+          </Box>
         </Box>
 
         <Box sx={styles.details}>
@@ -31,9 +38,13 @@ const ProductCard = ({ product }) => {
                 ₹{product.productId.mrpPrice?.toFixed(2)}
               </Typography>
             )}
-            <Typography sx={styles.salePriceText}>
-              ₹{product?.price?.toFixed(2)}
-            </Typography>
+            <Box>
+              <Typography sx={styles.salePriceText}>
+                ₹{product?.price?.toFixed(2)}
+              </Typography>
+              <Typography sx={styles.salesPrice}>Ordered At</Typography>
+            </Box>
+
             <Typography sx={styles.variantText}>
               {product?.variant &&
                 `${
@@ -57,9 +68,11 @@ const ProductCard = ({ product }) => {
             sx={styles.verifyIcon}
           />
         )}
-        <Typography variant="body2" sx={styles.scannedCount}>
-          {product.scannedCount || 0}/{product.itemCount}
-        </Typography>
+        <Box sx={styles.scannedCountContainer}>
+          <Typography variant="body2" sx={styles.scannedCount}>
+            {product.scannedCount || 0}/{product.itemCount}
+          </Typography>
+        </Box>
       </Box>
     </Paper>
   )
@@ -107,6 +120,7 @@ const styles = {
     textOverflow: "ellipsis",
   },
   labelId: {
+    visibility: "hidden",
     marginLeft: "15px",
     fontFamily: "Poppins, sans-serif",
     fontSize: "10px",
@@ -122,7 +136,7 @@ const styles = {
   verifyIcon: {
     position: "absolute",
     top: "20px",
-    right: "16px",
+    right: "22px",
     width: "30px",
     height: "32px",
   },
@@ -150,25 +164,71 @@ const styles = {
     fontSize: "20px",
     fontFamily: "Poppins",
   },
+  salesPrice: {
+    position: "absolute",
+    fontSize: "12px",
+    fontFamily: "Poppins",
+    color: "rgba(55, 71, 79, 0.54);",
+  },
+
+  scanPriceTextBox: {
+    position: "absolute",
+    left: 20,
+    bottom: 6,
+  },
+  scanPriceText: {
+    color: "#455d7a",
+    fontWeight: "600",
+    margin: "0",
+    fontSize: "20px",
+    fontFamily: "Poppins",
+  },
+  scanRate: {
+    fontSize: "12px",
+    margin: 0,
+    fontSize: "12px",
+    fontFamily: "Poppins",
+    color: "rgba(55, 71, 79, 0.54);",
+  },
   variantText: {
     position: "relative",
     top: 5,
     left: 25,
-    color: "rgba(33, 37, 41, 0.7)",
+    color: "#475053",
     fontWeight: "600",
     margin: "0",
-    fontSize: "14px",
+    fontSize: "16px",
     fontFamily: "Poppins, sans-serif",
     lineHeight: "20px",
   },
-  scannedCount: {
-    position: "absolute",
-    top: "62px",
-    right: "32px",
-    width: "11px",
-    height: "24px",
-    fontSize: "20px",
+  scannedCountContainer: {
+    position: "absolute", // Position it absolutely
+    top: "62px", // Adjust based on your design
+    right: "5px", // Adjust based on your design
+    width: "60px", // Fixed width
+    height: "auto", // Set to auto to allow wrapping
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center", // Center align text
+    padding: "4px", // Padding to avoid text touching borders
+    overflowWrap: "break-word", // Allow text to wrap
+    wordWrap: "break-word", // Allow text to wrap
+    whiteSpace: "normal", // Allow normal wrapping
   },
+  scannedCount: {
+    fontSize: "20px",
+    textAlign: "center", // Center align text
+  },
+  // scannedCount: {
+  //   position: "absolute",
+  //   top: "62px",
+  //   right: "32px",
+  //   width: "11px",
+  //   height: "24px",
+  //   fontSize: "20px",
+  //   whiteSpace: "wrap", // Prevent line breaks
+  //   maxWidth: "50px", // Limit the maximum width
+  // },
 
   labelCodeDiv: {
     width: "124px",
