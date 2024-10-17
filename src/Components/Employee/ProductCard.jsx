@@ -3,7 +3,7 @@ import verifyIcon from "../../../src/assets/verifyimage.png"
 
 const ProductCard = ({ product }) => {
   const isScanned = product.scannedCount >= product.itemCount
-  console.log("pprice", product?.price)
+
   return (
     <Paper
       elevation={1}

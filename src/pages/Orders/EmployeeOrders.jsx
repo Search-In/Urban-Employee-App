@@ -4,8 +4,9 @@ import axios from "axios"
 import PropTypes from "prop-types"
 import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import server from "../server"
-import EmployeeOrderCard from "./EmployeeOrderCard"
+import server from "../../Components/server"
+import EmployeeOrderCard from "./Layout/EmployeeOrderCard"
+import TrolleyModal from "./Layout/TrolleyModal"
 
 const header = {
   display: "flex",
@@ -60,13 +61,35 @@ function a11yProps(index) {
 
 const Orders = (props) => {
   const location = useLocation()
+  const navigate = useNavigate()
+  const [currentOrderId, setCurrentOrderId] = useState(null)
+
   const [value, setValue] = useState(
     location?.state?.value ? location?.state?.value : 0
   )
-
   const [orders, setOrders] = useState([])
+  const [isModalOpen, setModalOpen] = useState(false)
 
-  const navigate = useNavigate()
+  const handleOpenModal = () => {
+    setModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setModalOpen(false)
+    navigate(`/employee-order`, { state: { orderId: currentOrderId } })
+  }
+
+  const handleConfirm = () => {
+    console.log("User confirmed they have a Searching Trolley.")
+    setModalOpen(false)
+    navigate(`/trolley-connect`, { state: { orderId: currentOrderId } })
+  }
+
+  const handleNavigate = (orderId) => {
+    // Set the current order and open the modal
+    setCurrentOrderId(orderId)
+    setModalOpen(true)
+  }
 
   const getOrders = async () => {
     const data = localStorage.getItem("employee")
@@ -146,6 +169,8 @@ const Orders = (props) => {
                       orderdetails={currorder}
                       value={value}
                       key={i}
+                      handleOpenModal={handleOpenModal}
+                      handleNavigate={handleNavigate}
                       sx={{ padding: "50px" }}
                     />
                   )
@@ -177,6 +202,11 @@ const Orders = (props) => {
             })}
         </TabPanel>
       </Box>
+      <TrolleyModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onConfirm={handleConfirm}
+      />
     </Box>
   )
 }
