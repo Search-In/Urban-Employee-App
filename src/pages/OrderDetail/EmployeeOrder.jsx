@@ -13,17 +13,20 @@ import {
 import axios from "axios"
 import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import server from "../server"
+import server from "../../Components/server"
 // import EmployeeScanner from "./EmployeeScanner";
-import BarcodeScanner from "./BarcodeScanner"
-import Instructions from "./LabelCode/Instructions"
-import LabelCodeCard from "./LabelCode/LabelCodeCard"
-import ProductCard from "./ProductCard"
+import BarcodeScanner from "../../Components/Employee/BarcodeScanner"
+import Instructions from "../../Components/Employee/LabelCode/Instructions"
+import LabelCodeCard from "../../Components/Employee/LabelCode/LabelCodeCard"
+import ProductCard from "../../Components/Employee/ProductCard"
+import { useMqtt } from "../../context/MqttContext"
 
 const EmployeeOrder = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { orderId } = location.state || {}
+  const { publish } = useMqtt()
+
   console.log("Order Id from location is ", orderId)
 
   const [allProducts, setProducts] = useState([])
@@ -175,6 +178,7 @@ const EmployeeOrder = () => {
             }
 
             try {
+              console.log("publish ", product?.productId?.weight)
               const newScannedCount = product.scannedCount + 1
               const isScanned = newScannedCount === product.itemCount
               await axios.patch(
@@ -193,6 +197,18 @@ const EmployeeOrder = () => {
               )
 
               showProductScan()
+              const netWeight = parseFloat(
+                localStorage.getItem("virtualcartweight")
+              )
+              console.log("ntwet", netWeight)
+              const trolley = localStorage.getItem("trolley")
+              const productWeight = product?.productId?.weight
+              const totalWeight = netWeight + productWeight
+              localStorage.setItem("virtualcartweight", totalWeight)
+              publish("guestUser/updateVirtualCartWeight", {
+                virtualWeight: totalWeight,
+                trolleyId: trolley,
+              })
               setTimeout(() => {
                 setScanResult("")
               }, 3000)

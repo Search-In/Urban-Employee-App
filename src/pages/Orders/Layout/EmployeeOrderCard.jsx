@@ -103,6 +103,12 @@ const ButtonCartSecond = {
 }
 const EmployeeOrderCard = (props) => {
   const navigate = useNavigate()
+  const handleClick = (e) => {
+    e.preventDefault()
+    if (props.orderdetails.status === "pending") {
+      props?.handleOpenModal()
+    }
+  }
   return (
     <Box
       sx={{
@@ -115,6 +121,7 @@ const EmployeeOrderCard = (props) => {
         marginTop: "10px",
         width: "100%",
       }}
+      // onClick={handleClick}
     >
       <Box
         sx={{
@@ -123,11 +130,16 @@ const EmployeeOrderCard = (props) => {
         }}
         onClick={(e) => {
           e.preventDefault()
-          props.orderdetails.status === "pending"
-            ? navigate(`/employee-order`, {
-                state: { orderId: props.orderdetails._id },
-              })
-            : null
+          // props?.handleOpenModal()
+          // props.orderdetails.status === "pending"
+          //   ? navigate(`/employee-order`, {
+          //       state: { orderId: props.orderdetails._id },
+          //     })
+          //   : null
+
+          if (props.orderdetails.status === "pending") {
+            props?.handleNavigate(props.orderdetails._id)
+          }
         }}
       >
         <IconButton sx={EditButton}>
@@ -137,11 +149,16 @@ const EmployeeOrderCard = (props) => {
           sx={{ margin: "0px 0px 0px 10px" }}
           onClick={(e) => {
             e.preventDefault()
-            props.orderdetails.status === "pending"
-              ? navigate(`/employee-order`, {
-                  state: { orderId: props.orderdetails._id },
-                })
-              : null
+            // props?.handleOpenModal()
+            // props.orderdetails.status === "pending"
+            //   ? navigate(`/employee-order`, {
+            //       state: { orderId: props.orderdetails._id },
+            //     })
+            //   : null
+
+            if (props.orderdetails.status === "pending") {
+              props?.handleNavigate(props.orderdetails._id)
+            }
           }}
         >
           <Typography sx={OrderTitle}>
@@ -174,9 +191,11 @@ const EmployeeOrderCard = (props) => {
             sx={buttonProductCard}
             onClick={(e) => {
               e.preventDefault()
-              navigate(`/employee-order`, {
-                state: { orderId: props.orderdetails._id },
-              })
+              // props?.handleOpenModal()
+              // navigate(`/employee-order`, {
+              //   state: { orderId: props.orderdetails._id },
+              // })
+              props?.handleNavigate(props.orderdetails._id)
             }}
           >
             Start

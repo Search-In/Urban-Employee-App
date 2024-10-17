@@ -1,12 +1,13 @@
-import EmployeeLogin from "./Components/Employee/EmployeeLogin"
-import EmployeeHome from "./Components/Employee/EmployeeHome"
-import EmployeeOrder from "./Components/Employee/EmployeeOrder"
-import EmployeeOrders from "./Components/Employee/EmployeeOrders"
-import EmployeeDispatch from "./Components/Employee/EmployeeDispatch"
+import EmployeeLogin from "./pages/EmployeeLogin/EmployeeLogin"
+import EmployeeHome from "./pages/Home/EmployeeHome"
+import EmployeeOrder from "./pages/OrderDetail/EmployeeOrder"
+import EmployeeOrders from "./pages/Orders/EmployeeOrders"
+import EmployeeDispatch from "./pages/Dispatch/EmployeeDispatch"
 import DispatchSuccessAnimation from "./Components/Employee/Loader/DispatchSuccess"
 import EmployeeNavbar from "./Components/Employee/EmployeeNavbar/EmployeeNavbar"
 import PrivateEmployeeRoute from "./Components/PrivateRoute/PrivateRoutes"
 import { Navigate, Route, Routes, useLocation } from "react-router-dom"
+import TrolleyLink from "./pages/TrolleyLInk/TrolleyLink"
 
 function App() {
   const location = useLocation()
@@ -58,6 +59,14 @@ function App() {
           element={
             <PrivateEmployeeRoute>
               <DispatchSuccessAnimation />
+            </PrivateEmployeeRoute>
+          }
+        />
+        <Route
+          path="/trolley-connect"
+          element={
+            <PrivateEmployeeRoute>
+              <TrolleyLink />
             </PrivateEmployeeRoute>
           }
         />

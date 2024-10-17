@@ -4,13 +4,17 @@ import "./index.css"
 import App from "./App"
 import reportWebVitals from "./reportWebVitals"
 import { BrowserRouter } from "react-router-dom"
+import { MqttProvider } from "./context/MqttContext"
+import TrolleyStatusSnackbar from "../src/pages/TrolleyStatusSnackbar/TrolleyStatusSnackbar"
 
 const root = ReactDOM.createRoot(document.getElementById("root"))
 root.render(
   <React.StrictMode>
     <BrowserRouter>
-      {" "}
-      <App />
+      <MqttProvider>
+        <TrolleyStatusSnackbar />
+        <App />
+      </MqttProvider>
     </BrowserRouter>
   </React.StrictMode>
 )

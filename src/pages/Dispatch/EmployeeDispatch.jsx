@@ -1,6 +1,6 @@
-import { ArrowBack } from "@mui/icons-material";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
-import PlaceIcon from "@mui/icons-material/Place";
+import { ArrowBack } from "@mui/icons-material"
+import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded"
+import PlaceIcon from "@mui/icons-material/Place"
 import {
   Box,
   Button,
@@ -8,32 +8,34 @@ import {
   Grid,
   IconButton,
   Typography,
-} from "@mui/material";
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import server from "../server";
-import ProductCard from "./ProductCard";
+} from "@mui/material"
+import axios from "axios"
+import { useEffect, useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import server from "../../Components/server"
+import ProductCard from "../../Components/Employee/ProductCard"
+import { useMqtt } from "../../context/MqttContext"
 
 const EmployeeDispatch = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { orderId } = location.state || {};
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { orderId } = location.state || {}
+  const { publish, disconnect, setIsSessionEnded } = useMqtt()
 
-  const [products, setProducts] = useState([]);
-  const data = localStorage.getItem("employee");
-  const employeeData = JSON.parse(data);
-  const employeeId = employeeData._id;
-  const [recipientInfo, setRecipientInfo] = useState({});
+  const [products, setProducts] = useState([])
+  const data = localStorage.getItem("employee")
+  const employeeData = JSON.parse(data)
+  const employeeId = employeeData._id
+  const [recipientInfo, setRecipientInfo] = useState({})
 
   const getOrders = async () => {
-    const data = localStorage.getItem("employee");
-    const employeeData = JSON.parse(data);
+    const data = localStorage.getItem("employee")
+    const employeeData = JSON.parse(data)
     const result = await axios.get(`${server}/admin/orders/${orderId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
-    });
+    })
     setRecipientInfo({
       name: result?.data?.deliveryAddressId?.recipientName,
       phone: result?.data?.deliveryAddressId?.recipientPhoneNo,
@@ -43,10 +45,10 @@ const EmployeeDispatch = () => {
       message: result?.data?.message,
       orderNo: result?.data?.orderId,
       totalAmount: result?.data?.totalAmount,
-    });
-    const arr = result.data?.productList;
-    setProducts(arr);
-  };
+    })
+    const arr = result.data?.productList
+    setProducts(arr)
+  }
 
   const updateOrderStatus = async () => {
     try {
@@ -59,12 +61,12 @@ const EmployeeDispatch = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
-        },
-      );
+        }
+      )
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
 
   const updatedispatchTime = async () => {
     try {
@@ -77,45 +79,52 @@ const EmployeeDispatch = () => {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
           },
-        },
-      );
+        }
+      )
     } catch (error) {
-      console.log(error);
+      console.log(error)
     }
-  };
+  }
   useEffect(() => {
-    getOrders();
-  }, []);
+    getOrders()
+  }, [])
 
   const handleDispatch = async () => {
-    navigate("/dispatch-success");
-    await updatedispatchTime();
-    updateOrderStatus();
-  };
+    navigate("/dispatch-success")
+    localStorage.setItem("virtualcartweight", 0)
+    const session = localStorage.getItem("session")
+    publish("guestUser/endSession", { sessionId: session })
+    setIsSessionEnded(true)
+    disconnect()
+    localStorage.removeItem("session")
+    localStorage.removeItem("trolley")
+    await updatedispatchTime()
+    updateOrderStatus()
+  }
 
   useEffect(() => {
     if (products.length > 0) {
       const count = products.filter(
-        (product) => product.scannedCount === product.itemCount,
-      ).length;
+        (product) => product.scannedCount === product.itemCount
+      ).length
 
       setRecipientInfo((prevrecipientInfo) => ({
         ...prevrecipientInfo,
         scannedTotal: count,
-      }));
+      }))
 
       const getTotalPrice = () => {
         return products.reduce((total, product) => {
-          return total + product.scannedCount * (product?.price || 0);
-        }, 0);
-      };
-      const value = getTotalPrice();
+          return total + product.scannedCount * (product?.price || 0)
+        }, 0)
+      }
+      const value = getTotalPrice()
       setRecipientInfo((prevrecipientInfo) => ({
         ...prevrecipientInfo,
         scannedAmout: value,
-      }));
+      }))
     }
-  }, [products]);
+  }, [products])
 
   return (
     <Box
@@ -214,8 +223,8 @@ const EmployeeDispatch = () => {
         </Button>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
 const header = {
   display: "flex",
@@ -224,7 +233,7 @@ const header = {
   padding: "10px",
   backgroundColor: "#fff",
   borderBottom: "1px solid #EAEAEA",
-};
+}
 
 const TopDiv = {
   display: "flex",
@@ -232,7 +241,7 @@ const TopDiv = {
   alignItems: "center",
   borderBottom: "2px solid #EAEAEA",
   padding: "10px 20px",
-};
+}
 
 const TotalTotal = {
   fontSize: "16px",
@@ -242,12 +251,12 @@ const TotalTotal = {
   letterSpacing: "0.6px",
   textalign: "left",
   margin: "1px 10px",
-};
+}
 
 const CategoryTitle = {
   fontWeight: "600",
   fontFamily: "Quicksand",
-};
+}
 
 const ButtonCart = {
   backgroundColor: "#5EC401",
@@ -263,7 +272,7 @@ const ButtonCart = {
   "&.MuiButtonBase-root:hover": {
     background: "#64cf00",
   },
-};
+}
 
 const TotalDivTotal = {
   display: "flex",
@@ -273,7 +282,7 @@ const TotalDivTotal = {
   // borderBottom: "2px solid #EAEAEA",
   // borderTop: "2px solid #EAEAEA",
   padding: "10px 0px",
-};
+}
 
 const messageSection = {
   margin: 0,
@@ -281,7 +290,7 @@ const messageSection = {
   borderRadius: "4px",
   padding: "10px",
   backgroundColor: "#fafafa",
-};
+}
 
 const messageHeading = {
   marginBottom: "8px",
@@ -290,12 +299,12 @@ const messageHeading = {
   fontSize: "13px",
   lineHeight: "16.25px",
   textalign: "left",
-};
+}
 
 const messageBody = {
   maxHeight: "80px",
   overflowY: "auto",
-};
+}
 
 const dropLocationSection = {
   margin: 0,
@@ -303,7 +312,7 @@ const dropLocationSection = {
   borderRadius: "4px",
   padding: "10px",
   backgroundColor: "#f5f5f5",
-};
+}
 
 const dropLocationHeading = {
   marginBottom: "8px",
@@ -313,7 +322,7 @@ const dropLocationHeading = {
   lineHeight: "24px",
   letterSpacing: "0.6000000238418579px",
   textalign: "left",
-};
+}
 
 const dropLocationBody = {
   display: "flex",
@@ -321,12 +330,12 @@ const dropLocationBody = {
   gap: "8px",
   maxHeight: "110px",
   overflowY: "auto",
-};
+}
 
 const dropLocationText = {
   fontSize: "14px",
   fontFamily: "Poppins",
-};
+}
 
 const bottomStickyContainer = {
   position: "sticky",
@@ -337,5 +346,5 @@ const bottomStickyContainer = {
   padding: "10px",
   textAlign: "left",
   zIndex: 1000,
-};
-export default EmployeeDispatch;
+}
+export default EmployeeDispatch
