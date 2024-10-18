@@ -201,14 +201,17 @@ const EmployeeOrder = () => {
                 localStorage.getItem("virtualcartweight")
               )
               console.log("ntwet", netWeight)
-              const trolley = localStorage.getItem("trolley")
-              const productWeight = product?.productId?.weight
-              const totalWeight = netWeight + productWeight
-              localStorage.setItem("virtualcartweight", totalWeight)
-              publish("guestUser/updateVirtualCartWeight", {
-                virtualWeight: totalWeight,
-                trolleyId: trolley,
-              })
+              if (product?.productId?.weight) {
+                const trolley = localStorage.getItem("trolley")
+                const productWeight = product.productId.weight
+                const totalWeight = netWeight + productWeight
+                localStorage.setItem("virtualcartweight", totalWeight)
+                publish("guestUser/updateVirtualCartWeight", {
+                  virtualWeight: totalWeight,
+                  trolleyId: trolley,
+                })
+              }
+
               setTimeout(() => {
                 setScanResult("")
               }, 3000)
