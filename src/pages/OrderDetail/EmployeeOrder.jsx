@@ -9,6 +9,7 @@ import {
   IconButton,
   Snackbar,
   Typography,
+  Fab,
 } from "@mui/material"
 import axios from "axios"
 import { useEffect, useState } from "react"
@@ -20,12 +21,15 @@ import Instructions from "../../Components/Employee/LabelCode/Instructions"
 import LabelCodeCard from "../../Components/Employee/LabelCode/LabelCodeCard"
 import ProductCard from "../../Components/Employee/ProductCard"
 import { useMqtt } from "../../context/MqttContext"
+import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates"
+import ScaleIcon from "@mui/icons-material/Scale"
+import TrolleyValues from "./Layout/TrolleyValues"
 
 const EmployeeOrder = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const { orderId } = location.state || {}
-  const { publish } = useMqtt()
+  const { publish, isConnected } = useMqtt()
 
   console.log("Order Id from location is ", orderId)
 
@@ -368,6 +372,7 @@ const EmployeeOrder = () => {
 
   return (
     <div style={styles.container}>
+      {isConnected && <TrolleyValues />}
       <Box sx={styles.header}>
         <IconButton
           edge="start"

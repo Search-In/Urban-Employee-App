@@ -1,5 +1,6 @@
 import mqtt from "mqtt"
 import { createContext, useContext, useEffect, useState } from "react"
+import { json } from "react-router-dom"
 
 // Create a context for MQTT
 const MqttContext = createContext()
@@ -12,7 +13,11 @@ export const MqttProvider = ({ children }) => {
   const [session, setSession] = useState(null)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [isSessionEnded, setIsSessionEnded] = useState(false)
-  const [weightComparisonResult, setWeightComparisonResult] = useState(null)
+  const lastWeightComparisonData = sessionStorage.getItem("physicalWeight") || 0
+  console.log("last physical wiegh tis ", lastWeightComparisonData)
+  const [weightComparisonResult, setWeightComparisonResult] = useState(
+    JSON.parse(lastWeightComparisonData)
+  )
   const [trolleyStatus, setTrolleyStatus] = useState(null)
   let userId
 
@@ -120,7 +125,12 @@ export const MqttProvider = ({ children }) => {
       case "server/weightComparisonResult":
         const weightData = JSON.parse(message.toString())
         console.log("Virtual Cart Weight Data:", weightData)
-        setWeightComparisonResult(weightData)
+        if (weightData?.trolley?.physicalWeight) {
+          console.log("setting", weightData?.trolley?.physicalWeight)
+          setWeightComparisonResult(weightData)
+          sessionStorage.setItem("physicalWeight", JSON.stringify(weightData))
+        }
+
         break
         // case "guestUser/endSession":
         const endSessionData = JSON.parse(message.toString())

@@ -98,6 +98,7 @@ const EmployeeDispatch = () => {
     disconnect()
     localStorage.removeItem("session")
     localStorage.removeItem("trolley")
+    sessionStorage.clear()
     await updatedispatchTime()
     updateOrderStatus()
   }
