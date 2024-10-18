@@ -76,7 +76,7 @@ const TrolleyStatusFab = () => {
         style={{
           position: "fixed",
           top: 45,
-          right: 16,
+          left: 16,
           backgroundColor: isConnected ? "orange" : "red",
         }}
         onClick={handleOpen}
