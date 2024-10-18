@@ -62,13 +62,18 @@ const EmployeeOrder = () => {
     }
   }
 
-  const updateLabelCode = async (productId, labelCode) => {
+  const updateLabelCode = async (productId, labelCode, weight) => {
     try {
+      const payload = {}
+      if (labelCode) {
+        payload.labelcode = labelCode
+      }
+      if (weight) {
+        payload.weight = weight
+      }
       const result = await axios.put(
         `${server}/products/update/${productId}`,
-        {
-          labelcode: labelCode,
-        },
+        payload,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -138,7 +143,7 @@ const EmployeeOrder = () => {
     vibrateDevice([200, 100, 200])
   }
   const showLabeUpdate = () => {
-    setSnackbarMessage("Label Updated")
+    setSnackbarMessage("Product Updated")
     setSnackbarSeverity("info")
     setOpenSnackbar(true)
   }
@@ -174,6 +179,13 @@ const EmployeeOrder = () => {
 
             if (product.scannedCount >= product.itemCount) {
               showWarningSnackbar()
+              setScanResult("")
+              return product
+            }
+            if (!product?.productId?.weight) {
+              setProductInfo(product?.productId)
+              setOpenLabelCard(true)
+              setScanResult("")
               return product
             }
 
@@ -201,16 +213,15 @@ const EmployeeOrder = () => {
                 localStorage.getItem("virtualcartweight")
               )
               console.log("ntwet", netWeight)
-              if (product?.productId?.weight) {
-                const trolley = localStorage.getItem("trolley")
-                const productWeight = product.productId.weight
-                const totalWeight = netWeight + productWeight
-                localStorage.setItem("virtualcartweight", totalWeight)
-                publish("guestUser/updateVirtualCartWeight", {
-                  virtualWeight: totalWeight,
-                  trolleyId: trolley,
-                })
-              }
+
+              const trolley = localStorage.getItem("trolley")
+              const productWeight = product.productId.weight
+              const totalWeight = netWeight + productWeight
+              localStorage.setItem("virtualcartweight", totalWeight)
+              publish("guestUser/updateVirtualCartWeight", {
+                virtualWeight: totalWeight,
+                trolleyId: trolley,
+              })
 
               setTimeout(() => {
                 setScanResult("")
@@ -278,8 +289,9 @@ const EmployeeOrder = () => {
     }
   }
 
-  const onLabelCodeChange = async (productId, labelCode) => {
-    await updateLabelCode(productId, labelCode)
+  const onLabelCodeChange = async (productId, labelCode, weight) => {
+    await updateLabelCode(productId, labelCode, weight)
+    getOrders()
     setOpenLabelCard(false)
   }
 
@@ -410,13 +422,16 @@ const EmployeeOrder = () => {
       <div style={styles.bottomHalf}>
         {!orderId && <Instructions />}
         {openLabeCard && (
-          <Box style={{ position: "absolute", bottom: 170 }}>
-            <LabelCodeCard
-              product={productInfo}
-              onLabelCodeChange={onLabelCodeChange}
-              onRemove={() => setOpenLabelCard(false)}
-            />
-          </Box>
+          <>
+            <div style={styles.overlay}></div>
+            <Box style={{ position: "absolute", bottom: 170, zIndex: 999 }}>
+              <LabelCodeCard
+                product={productInfo}
+                onLabelCodeChange={onLabelCodeChange}
+                onRemove={() => setOpenLabelCard(false)}
+              />
+            </Box>
+          </>
         )}
 
         {orderInfo.message && (
@@ -486,6 +501,16 @@ const styles = {
   CategoryTitle: {
     fontWeight: "600",
     fontFamily: "Quicksand",
+  },
+  overlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent dark background
+    backdropFilter: "blur(5px)", // Blur effect
+    zIndex: 998, // Make sure it's behind the card but above the other content
   },
   header: {
     position: "absolute",

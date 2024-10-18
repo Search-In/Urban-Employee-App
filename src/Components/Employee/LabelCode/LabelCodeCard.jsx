@@ -16,11 +16,13 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
   const [bayNo, setBayNo] = useState(labelBay || "")
   const [rack, setRack] = useState(labelRack || "")
   const [shelf, setShelf] = useState(labelShelf || "")
+  const [weight, setWeight] = useState(product?.weight || "") // New state for weight
 
   const areaRef = useRef(null)
   const bayNoRef = useRef(null)
   const rackRef = useRef(null)
   const shelfRef = useRef(null)
+  const weightRef = useRef(null)
 
   const handleKeyPress = (e, nextRef) => {
     if (e.key === "Enter") {
@@ -31,7 +33,15 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
 
   const handleLabelCodeChange = () => {
     const labelCode = `${area}-${bayNo}-${rack}-${shelf}`
-    onLabelCodeChange(product._id, labelCode)
+    onLabelCodeChange(product._id, labelCode, weight)
+  }
+
+  const handleRemove = () => {
+    if (!weight) {
+      alert("Please enter the weight before closing the card.") // Show alert or error message
+      return
+    }
+    onRemove()
   }
 
   return (
@@ -81,7 +91,7 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
               </Typography>
               <IconButton
                 aria-label="close"
-                onClick={() => onRemove()}
+                onClick={handleRemove}
                 size="small"
                 sx={{ paddingTop: 0 }}
               >
@@ -173,6 +183,30 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
             inputRef={shelfRef}
           />
         </Box>
+        {/* New Weight Input Field */}
+        <Typography
+          variant="body2"
+          component="div"
+          sx={{ fontWeight: "bold", padding: "1px 1px", marginTop: 1 }}
+        >
+          Enter Weight:
+        </Typography>
+
+        <TextField
+          label="Weight"
+          variant="outlined"
+          size="small"
+          value={weight}
+          onChange={(e) => setWeight(e.target.value)}
+          required
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault()
+              handleLabelCodeChange()
+            }
+          }}
+          inputRef={weightRef}
+        />
         <div
           style={{
             display: "flex",
@@ -186,7 +220,7 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
             sx={{ marginTop: 1, backgroundColor: "#5EC401" }}
             onClick={handleLabelCodeChange}
           >
-            Update Label Code
+            Update
           </Button>
         </div>
       </Box>
