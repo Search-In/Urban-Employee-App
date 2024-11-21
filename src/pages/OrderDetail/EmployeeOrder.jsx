@@ -24,6 +24,8 @@ import { useMqtt } from "../../context/MqttContext"
 import TipsAndUpdatesIcon from "@mui/icons-material/TipsAndUpdates"
 import ScaleIcon from "@mui/icons-material/Scale"
 import TrolleyValues from "./Layout/TrolleyValues"
+import DispatchRequestModal from "./Layout/DispatchRequestModal"
+import { toast, ToastContainer } from "react-toastify"
 
 const EmployeeOrder = () => {
   const navigate = useNavigate()
@@ -31,8 +33,8 @@ const EmployeeOrder = () => {
   const { orderId } = location.state || {}
   const { publish, isConnected } = useMqtt()
 
-  console.log("Order Id from location is ", orderId)
-
+  const [isRequestAlreadyExists, setIsRequestAlreadyExists] = useState(false)
+  const [scannedProducts, setScannedProducts] = useState([])
   const [allProducts, setProducts] = useState([])
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState("")
@@ -46,6 +48,39 @@ const EmployeeOrder = () => {
   const [productInfo, setProductInfo] = useState("")
   const [openLabeCard, setOpenLabelCard] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+
+  const [isModalOpen, setModalOpen] = useState(false)
+
+  const handleOpenModal = () => setModalOpen(true)
+  const handleCloseModal = () => setModalOpen(false)
+
+  const handleConfirm = async () => {
+    try {
+      const result = await axios.patch(
+        `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
+        {
+          isDispatchOverwriteRequest: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+      // Show success toast message
+      if (result?.status == 200) {
+        toast.success("Dispatch request updated!!")
+        getOrders()
+        // navigate("/employee-dispatch", { state: { orderId: orderId } })
+      }
+    } catch (error) {
+      console.error("Error dispatching order:", error)
+      // Show error toast message
+      toast.error("Failed to dispatch order. Please try again.")
+    } finally {
+      setModalOpen(false)
+    }
+  }
 
   const getProductByBarcode = async (barcode) => {
     try {
@@ -96,14 +131,17 @@ const EmployeeOrder = () => {
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     })
-    console.log("result is ", result)
+    console.log("new result is ", result.data.products)
     setOrderInfo({
       message: result?.data?.message,
       orderNo: result?.data?.orderId,
       totalAmount: result?.data?.totalAmount,
+      isDispatchOverwriteRequest: result?.data?.isDispatchOverwriteRequest,
+      dispatchStatus: result?.data?.dispatchStatus,
     })
+    setIsRequestAlreadyExists(result?.data?.isDispatchOverwriteRequest)
 
-    const productList = result.data?.productList
+    const productList = result.data?.productList || result.data.products
     setProducts(productList)
     // if (productList) {
     //   // Sort the productList array based on labelcode within productId
@@ -169,13 +207,10 @@ const EmployeeOrder = () => {
 
       let foundProduct = false
       const updatedProducts = await Promise.all(
-        allProducts.map(async (product) => {
+        allProducts?.map(async (product) => {
           const productBarcodes = Array.isArray(product.productId.barcode)
             ? product.productId.barcode.map((b) => String(b).trim())
             : []
-
-          console.log("Product barcodes after conversion:", productBarcodes)
-          console.log("Scanned barcode:", `"${productBarcode}"`)
 
           // Check if the product barcode array includes the scanned barcode
           if (productBarcodes.includes(productBarcode)) {
@@ -258,7 +293,7 @@ const EmployeeOrder = () => {
   }
 
   // Determine if all products are scanned
-  const allProductsScanned = allProducts.every(
+  const allProductsScanned = allProducts?.every(
     (product) => product.scannedCount >= product.itemCount
   )
 
@@ -324,8 +359,16 @@ const EmployeeOrder = () => {
   }, [])
 
   useEffect(() => {
-    if (allProducts.length > 0) {
-      const count = allProducts.filter(
+    if (allProducts?.length > 0) {
+      console.log("fullfilled products are ", allProducts)
+      const fulfilledProducts = allProducts?.filter(
+        (product) => product.scannedCount < product.itemCount
+      )
+      console.log("fullfilled products after are  ", fulfilledProducts)
+
+      setScannedProducts(fulfilledProducts)
+
+      const count = allProducts?.filter(
         (product) => product.scannedCount === product.itemCount
       ).length
 
@@ -335,7 +378,7 @@ const EmployeeOrder = () => {
       }))
 
       const getTotalPrice = () => {
-        return allProducts.reduce((total, product) => {
+        return allProducts?.reduce((total, product) => {
           console.log("map product ", product)
           let variantMultiplier = product?.variant ? product.variant : 1
           console.log("variant mulitplie ri ", variantMultiplier)
@@ -370,135 +413,160 @@ const EmployeeOrder = () => {
     }
   }
 
-  return (
-    <div style={styles.container}>
-      {isConnected && <TrolleyValues />}
-      <Box sx={styles.header}>
-        <IconButton
-          edge="start"
-          color="inherit"
-          aria-label="back"
-          onClick={handleBackClick}
-          sx={{ position: "absolute", top: "4px", left: "10px" }}
-        >
-          <ArrowBack />
-        </IconButton>
+  const handleConfirmOrderButton = async () => {
+    await getOrders()
+    if (orderInfo?.isDispatchOverwriteRequest) {
+      console.log("working is ")
+      setScannedProducts([])
+      setIsRequestAlreadyExists(true)
+    }
+    if (orderInfo?.dispatchStatus === "accepted") {
+      navigate("/employee-dispatch", {
+        state: { orderId: orderId },
+      })
+    }
+    !allProductsScanned ? handleOpenModal() : handleDispatch()
+  }
 
-        {/* <Typography variant="h6" sx={styles.CategoryTitle}>
+  return (
+    <>
+      <ToastContainer />
+      <div style={styles.container}>
+        <DispatchRequestModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onConfirm={handleConfirm}
+          products={scannedProducts}
+          isRequestAlreadyExists={isRequestAlreadyExists}
+        />
+        {isConnected && <TrolleyValues />}
+        <Box sx={styles.header}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="back"
+            onClick={handleBackClick}
+            sx={{ position: "absolute", top: "4px", left: "10px" }}
+          >
+            <ArrowBack />
+          </IconButton>
+
+          {/* <Typography variant="h6" sx={styles.CategoryTitle}>
           Order #{orderInfo.orderNo}
         </Typography> */}
-      </Box>
-      {/* Top Half: Barcode Scanner (Placeholder for now) */}
-      <div style={styles.topHalf}>
-        {/* <Typography variant="h6" color="textSecondary" align="center"> */}
-        {/* Scanner Component Placeholder */}
-        {/* <EmployeeScanner
+        </Box>
+        {/* Top Half: Barcode Scanner (Placeholder for now) */}
+        <div style={styles.topHalf}>
+          {/* <Typography variant="h6" color="textSecondary" align="center"> */}
+          {/* Scanner Component Placeholder */}
+          {/* <EmployeeScanner
             handleScan={handleScan}
             scanResult={scanResult}
             setScanResult={setScanResult}
             activeScanner={activeScanner}
             setActiveScanner={setActiveScanner}
           /> */}
-        <div style={styles.scannerContainer}>
-          <BarcodeScanner
-            handleScan={handleScan}
-            scanResult={scanResult}
-            setScanResult={setScanResult}
-            activeScanner={activeScanner}
-            setActiveScanner={setActiveScanner}
-            setIsScanning={setIsScanning}
-            isScanning={isScanning}
-          />
+          <div style={styles.scannerContainer}>
+            <BarcodeScanner
+              handleScan={handleScan}
+              scanResult={scanResult}
+              setScanResult={setScanResult}
+              activeScanner={activeScanner}
+              setActiveScanner={setActiveScanner}
+              setIsScanning={setIsScanning}
+              isScanning={isScanning}
+            />
+          </div>
         </div>
-      </div>
-      {orderId && (
-        <Box sx={styles.TopDiv}>
-          <Typography variant="h6" sx={styles.TotalTotal}>
-            Order #{orderInfo.orderNo}
-          </Typography>
-          <Typography sx={styles.TotalTotal}>Total Products</Typography>
-          <Typography sx={styles.TotalTotal}>
-            {orderInfo.scannedTotal} / {allProducts.length}
-          </Typography>
-        </Box>
-      )}
-
-      {/* Bottom Half: Product Cards */}
-      <div style={styles.bottomHalf}>
-        {!orderId && <Instructions />}
-        {openLabeCard && (
-          <>
-            <div style={styles.overlay}></div>
-            <Box style={{ position: "absolute", bottom: 170, zIndex: 999 }}>
-              <LabelCodeCard
-                product={productInfo}
-                onLabelCodeChange={onLabelCodeChange}
-                onRemove={() => setOpenLabelCard(false)}
-              />
-            </Box>
-          </>
-        )}
-
-        {orderInfo.message && (
-          <Box sx={styles.messageSection}>
-            <Typography variant="h6" sx={styles.messageHeading}>
-              Customer's Special Message
+        {orderId && (
+          <Box sx={styles.TopDiv}>
+            <Typography variant="h6" sx={styles.TotalTotal}>
+              Order #{orderInfo.orderNo}
             </Typography>
-            <Box sx={styles.messageBody}>
-              <Typography variant="body2">{orderInfo.message}</Typography>
-            </Box>
+            <Typography sx={styles.TotalTotal}>Total Products</Typography>
+            <Typography sx={styles.TotalTotal}>
+              {orderInfo.scannedTotal} / {allProducts?.length}
+            </Typography>
           </Box>
         )}
-        <Container maxWidth={false} disableGutters>
-          <Grid container spacing={0}>
-            {allProducts.map((product, index) => (
-              <Grid item xs={12} key={index}>
-                <ProductCard product={product} />
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </div>
 
-      {orderId && (
-        <Box sx={styles.bottomStickyContainer}>
-          {/* <Box sx={styles.TotalDivTotal}>
+        {/* Bottom Half: Product Cards */}
+        <div style={styles.bottomHalf}>
+          {!orderId && <Instructions />}
+          {openLabeCard && (
+            <>
+              <div style={styles.overlay}></div>
+              <Box style={{ position: "absolute", bottom: 170, zIndex: 999 }}>
+                <LabelCodeCard
+                  product={productInfo}
+                  onLabelCodeChange={onLabelCodeChange}
+                  onRemove={() => setOpenLabelCard(false)}
+                />
+              </Box>
+            </>
+          )}
+
+          {orderInfo.message && (
+            <Box sx={styles.messageSection}>
+              <Typography variant="h6" sx={styles.messageHeading}>
+                Customer's Special Message
+              </Typography>
+              <Box sx={styles.messageBody}>
+                <Typography variant="body2">{orderInfo.message}</Typography>
+              </Box>
+            </Box>
+          )}
+          <Container maxWidth={false} disableGutters>
+            <Grid container spacing={0}>
+              {allProducts?.map((product, index) => (
+                <Grid item xs={12} key={index}>
+                  <ProductCard product={product} />
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
+        </div>
+
+        {orderId && (
+          <Box sx={styles.bottomStickyContainer}>
+            {/* <Box sx={styles.TotalDivTotal}>
       <Typography sx={styles.TotalTotal}>Order Amount</Typography>
       <Typography sx={styles.TotalTotal}>
         ₹{orderInfo.scannedAmout}/₹{orderInfo.totalAmount}
       </Typography>
     </Box> */}
 
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleDispatch}
-            sx={styles.ButtonCart}
-            disabled={!allProductsScanned || orderId === undefined}
-          >
-            Confirm Order ₹{orderInfo.scannedAmout}/₹{orderInfo.totalAmount}
-            <ArrowForwardRoundedIcon
-              sx={{ position: "absolute", right: "20px" }}
-            />
-          </Button>
-        </Box>
-      )}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleConfirmOrderButton}
+              sx={styles.ButtonCart}
+              disabled={orderId === undefined}
+            >
+              Confirm Order ₹{orderInfo.scannedAmout}/₹{orderInfo.totalAmount}
+              <ArrowForwardRoundedIcon
+                sx={{ position: "absolute", right: "20px" }}
+              />
+            </Button>
+          </Box>
+        )}
 
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={3000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <Alert
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={3000}
           onClose={handleSnackbarClose}
-          severity={snackbarSeverity}
-          sx={{ width: "100%" }}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
         >
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </div>
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbarSeverity}
+            sx={{ width: "100%" }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </div>
+    </>
   )
 }
 
