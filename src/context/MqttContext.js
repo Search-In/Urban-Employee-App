@@ -42,6 +42,7 @@ export const MqttProvider = ({ children }) => {
         JSON.stringify({ alertLight: "connected" })
       )
       setIsConnected(true)
+      sessionStorage.setItem("trolleyConnection", true)
 
       // Subscribe to topics when connected
       subscribeToTopics(mqttClient)
@@ -50,6 +51,7 @@ export const MqttProvider = ({ children }) => {
     mqttClient.on("error", (err) => {
       console.error("MQTT Connection error:", err)
       setIsConnected(false)
+      sessionStorage.setItem("trolleyConnection", false)
       const token = localStorage.getItem("accessToken")
       if (token) {
         console.log("token is present reconnecting ")
@@ -64,6 +66,7 @@ export const MqttProvider = ({ children }) => {
     mqttClient.on("disconnect", () => {
       console.log("Disconnected from MQTT broker")
       setIsConnected(false)
+      sessionStorage.setItem("trolleyConnection", false)
     })
 
     mqttClient.on("message", (topic, message) => {
@@ -154,6 +157,7 @@ export const MqttProvider = ({ children }) => {
       client.end()
       setClient(null)
       setIsConnected(false)
+      sessionStorage.setItem("trolleyConnection", false)
     }
   }
 
