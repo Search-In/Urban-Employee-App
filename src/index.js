@@ -6,13 +6,19 @@ import reportWebVitals from "./reportWebVitals"
 import { BrowserRouter } from "react-router-dom"
 import { MqttProvider } from "./context/MqttContext"
 import TrolleyStatusSnackbar from "../src/pages/TrolleyStatusSnackbar/TrolleyStatusSnackbar"
+import { useMqtt } from "../src/context/MqttContext"
 
+const TrolleyStatus = () => {
+  const { isConnected } = useMqtt()
+  return <>{isConnected && <TrolleyStatusSnackbar />}</>
+}
 const root = ReactDOM.createRoot(document.getElementById("root"))
+
 root.render(
   <React.StrictMode>
     <BrowserRouter>
       <MqttProvider>
-        <TrolleyStatusSnackbar />
+        <TrolleyStatus />
         <App />
       </MqttProvider>
     </BrowserRouter>

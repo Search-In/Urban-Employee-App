@@ -221,7 +221,7 @@ const EmployeeOrder = () => {
               setScanResult("")
               return product
             }
-            if (!product?.productId?.weight) {
+            if (isConnected && !product?.productId?.weight) {
               setProductInfo(product?.productId)
               setOpenLabelCard(true)
               setScanResult("")
@@ -257,10 +257,17 @@ const EmployeeOrder = () => {
               const productWeight = product.productId.weight
               const totalWeight = netWeight + productWeight
               localStorage.setItem("virtualcartweight", totalWeight)
-              publish("guestUser/updateVirtualCartWeight", {
-                virtualWeight: totalWeight,
-                trolleyId: trolley,
-              })
+
+              const isTrolleyConnected =
+                sessionStorage.getItem("trolleyConnection") === "true"
+              console.log("it will not work")
+              if (isTrolleyConnected) {
+                console.log("publishing the event it might reconnedt")
+                publish("guestUser/updateVirtualCartWeight", {
+                  virtualWeight: totalWeight,
+                  trolleyId: trolley,
+                })
+              }
 
               setTimeout(() => {
                 setScanResult("")
