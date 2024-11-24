@@ -8,6 +8,7 @@ import IconButton from "@mui/material/IconButton"
 import TextField from "@mui/material/TextField"
 import Typography from "@mui/material/Typography"
 import { useRef, useState } from "react"
+import Chip from "@mui/material/Chip"
 
 const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
   const [labelArea = "", labelBay = "", labelRack = "", labelShelf = ""] =
@@ -17,12 +18,28 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
   const [rack, setRack] = useState(labelRack || "")
   const [shelf, setShelf] = useState(labelShelf || "")
   const [weight, setWeight] = useState(product?.weight || "") // New state for weight
+  const [barcodes, setBarcodes] = useState(product?.barcode || []) // Barcodes array
+  const [barcodeInput, setBarcodeInput] = useState("")
 
   const areaRef = useRef(null)
   const bayNoRef = useRef(null)
   const rackRef = useRef(null)
   const shelfRef = useRef(null)
   const weightRef = useRef(null)
+  const barcodeRef = useRef(null)
+
+  const handleAddBarcode = (e) => {
+    if (e.key === "Enter" && barcodeInput.trim()) {
+      if (!barcodes.includes(barcodeInput.trim())) {
+        setBarcodes((prev) => [...prev, barcodeInput.trim()])
+      }
+      setBarcodeInput("")
+    }
+  }
+
+  const handleDeleteBarcode = (barcode) => {
+    setBarcodes((prev) => prev.filter((b) => b !== barcode))
+  }
 
   const handleKeyPress = (e, nextRef) => {
     if (e.key === "Enter") {
@@ -33,14 +50,14 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
 
   const handleLabelCodeChange = () => {
     const labelCode = `${area}-${bayNo}-${rack}-${shelf}`
-    onLabelCodeChange(product._id, labelCode, weight)
+    onLabelCodeChange(product._id, labelCode, weight, barcodes)
   }
 
   const handleRemove = () => {
-    if (!weight) {
-      alert("Please enter the weight before closing the card.") // Show alert or error message
-      return
-    }
+    // if (!weight) {
+    //   alert("Please enter the weight before closing the card.") // Show alert or error message
+    //   return
+    // }
     onRemove()
   }
 
@@ -108,7 +125,7 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
                 ₹{product?.price?.toFixed(2)}
               </Typography>
             </div>
-            <Typography>BarCode-{product?.barcode}</Typography>
+            {/* <Typography>BarCode-{product?.barcode}</Typography> */}
           </CardContent>
         </Box>
       </Box>
@@ -198,7 +215,9 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
           size="small"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          required
+          style={{
+            width: "90%",
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault()
@@ -207,6 +226,48 @@ const LabelCodeCard = ({ product, onRemove, onLabelCodeChange }) => {
           }}
           inputRef={weightRef}
         />
+        <div>
+          {/* Barcode Input Field */}
+          <TextField
+            label="Enter Barcode"
+            value={barcodeInput}
+            onChange={(e) => setBarcodeInput(e.target.value)}
+            onKeyDown={handleAddBarcode} // Trigger on Enter key press
+            variant="outlined"
+            style={{
+              width: "90%",
+              marginBottom: "10px",
+              backgroundColor: "#EFF1F9",
+              marginTop: "10px",
+            }}
+            placeholder="Press Enter to add barcode"
+          />
+
+          {/* Display Barcodes as Tags */}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 1,
+              maxHeight: "100px",
+              overflowY: "auto", // Enable vertical scroll if too many barcodes
+              padding: "10px",
+              border: "1px solid #ccc",
+              marginBottom: "10px",
+            }}
+          >
+            {barcodes?.map((barcode, index) => (
+              <Chip
+                key={index}
+                label={barcode}
+                onDelete={() => handleDeleteBarcode(barcode)}
+                color="primary"
+                style={{ marginBottom: "5px" }}
+              />
+            ))}
+          </Box>
+        </div>
+
         <div
           style={{
             display: "flex",

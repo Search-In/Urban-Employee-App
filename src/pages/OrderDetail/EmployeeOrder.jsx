@@ -101,7 +101,7 @@ const EmployeeOrder = () => {
     }
   }
 
-  const updateLabelCode = async (productId, labelCode, weight) => {
+  const updateLabelCode = async (productId, labelCode, weight, barcodes) => {
     try {
       const payload = {}
       if (labelCode) {
@@ -109,6 +109,9 @@ const EmployeeOrder = () => {
       }
       if (weight) {
         payload.weight = weight
+      }
+      if (barcodes.length > 0) {
+        payload.barcode = barcodes
       }
       const result = await axios.put(
         `${server}/products/update/${productId}`,
@@ -121,6 +124,7 @@ const EmployeeOrder = () => {
       )
       showLabeUpdate()
     } catch (error) {
+      console.log("error", error)
       showFailedLabelUpdate()
     }
   }
@@ -335,8 +339,8 @@ const EmployeeOrder = () => {
     }
   }
 
-  const onLabelCodeChange = async (productId, labelCode, weight) => {
-    await updateLabelCode(productId, labelCode, weight)
+  const onLabelCodeChange = async (productId, labelCode, weight, barcodes) => {
+    await updateLabelCode(productId, labelCode, weight, barcodes)
     getOrders()
     setOpenLabelCard(false)
   }
