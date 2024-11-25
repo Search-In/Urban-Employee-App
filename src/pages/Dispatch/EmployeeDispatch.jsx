@@ -116,9 +116,23 @@ const EmployeeDispatch = () => {
 
       const getTotalPrice = () => {
         return products.reduce((total, product) => {
-          return total + product.scannedCount * (product?.price || 0)
+          const price = product?.price || 0
+          const scannedCount = product?.scannedCount || 0
+
+          if (product?.variant) {
+            const proportion =
+              product.variant < 100 ? product.variant : product.variant / 1000
+            return total + scannedCount * price * proportion
+          }
+          return total + scannedCount * price
         }, 0)
       }
+
+      // const getTotalPrice = () => {
+      //   return products.reduce((total, product) => {
+      //     return total + product.scannedCount * (product?.price || 0)
+      //   }, 0)
+      // }
       const value = getTotalPrice()
       setRecipientInfo((prevrecipientInfo) => ({
         ...prevrecipientInfo,
