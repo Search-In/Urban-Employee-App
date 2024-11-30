@@ -193,7 +193,7 @@ const styles = {
   variantText: {
     position: "relative",
     top: 5,
-    left: 25,
+    left: 10,
     color: "#475053",
     fontWeight: "600",
     margin: "0",

@@ -36,6 +36,7 @@ const EmployeeDispatch = () => {
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
       },
     })
+    const deliveryCharge = result?.data?.totalAmount > 999 ? 0 : 50
     setRecipientInfo({
       name: result?.data?.deliveryAddressId?.recipientName,
       phone: result?.data?.deliveryAddressId?.recipientPhoneNo,
@@ -45,6 +46,7 @@ const EmployeeDispatch = () => {
       message: result?.data?.message,
       orderNo: result?.data?.orderId,
       totalAmount: result?.data?.totalAmount,
+      deliveryCharge: deliveryCharge,
     })
     const arr = result.data?.productList
     setProducts(arr)
@@ -205,6 +207,10 @@ const EmployeeDispatch = () => {
           <Typography variant="body1" sx={dropLocationText}>
             Address:
             {`${recipientInfo.addressLine} ${recipientInfo.pincode}`}
+          </Typography>
+          <Typography variant="body1" sx={dropLocationText}>
+            Delivery Charge:
+            {`${recipientInfo.deliveryCharge}`}
           </Typography>
         </Box>
       </Box>
