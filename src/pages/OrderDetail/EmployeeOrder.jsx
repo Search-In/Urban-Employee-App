@@ -225,12 +225,12 @@ const EmployeeOrder = () => {
               setScanResult("")
               return product
             }
-            if (isConnected && !product?.productId?.weight) {
-              setProductInfo(product?.productId)
-              setOpenLabelCard(true)
-              setScanResult("")
-              return product
-            }
+            // if (isConnected && !product?.productId?.weight) {
+            //   setProductInfo(product?.productId)
+            //   setOpenLabelCard(true)
+            //   setScanResult("")
+            //   return product
+            // }
 
             try {
               console.log("publish ", product?.productId?.weight)
@@ -265,13 +265,14 @@ const EmployeeOrder = () => {
               const isTrolleyConnected =
                 sessionStorage.getItem("trolleyConnection") === "true"
               console.log("it will not work")
-              if (isTrolleyConnected) {
-                console.log("publishing the event it might reconnedt")
-                publish("guestUser/updateVirtualCartWeight", {
-                  virtualWeight: totalWeight,
-                  trolleyId: trolley,
-                })
-              }
+              //it is commented untill the trolley flow
+              // if (isTrolleyConnected) {
+              //   console.log("publishing the event it might reconnedt")
+              //   publish("guestUser/updateVirtualCartWeight", {
+              //     virtualWeight: totalWeight,
+              //     trolleyId: trolley,
+              //   })
+              // }
 
               setTimeout(() => {
                 setScanResult("")
@@ -611,6 +612,8 @@ const styles = {
     flexDirection: "column",
     height: "100vh",
     width: "100%",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
   topHalf: {
     height: "35%",
@@ -647,7 +650,7 @@ const styles = {
     fontSize: "18px",
     fontWeight: "500",
     fontFamily: "Poppins",
-    width: "99%",
+    width: "95%",
     "&.MuiButtonBase-root:hover": {
       background: "#64cf00",
     },
