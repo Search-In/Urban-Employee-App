@@ -155,6 +155,7 @@ const EmployeeDispatch = () => {
         width: "100%",
         border: "1px solid blue",
         overflowY: "auto",
+        overflowX: "hidden",
       }}
     >
       <Box sx={header}>
@@ -361,7 +362,7 @@ const dropLocationText = {
 const bottomStickyContainer = {
   position: "sticky",
   bottom: 0,
-  width: "100%",
+  width: "95%",
   backgroundColor: "#fff",
   borderTop: "1px solid #EAEAEA",
   padding: "10px",
