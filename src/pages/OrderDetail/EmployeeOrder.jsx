@@ -241,6 +241,8 @@ const EmployeeOrder = () => {
                 {
                   scannedCount: newScannedCount,
                   isScanned: isScanned,
+                  code: barcode,
+                  rate: product?.productId?.price,
                 },
                 {
                   headers: {
@@ -614,6 +616,8 @@ const styles = {
     width: "100%",
     boxSizing: "border-box",
     overflow: "hidden",
+    margin: 0,
+    padding: 0,
   },
   topHalf: {
     height: "35%",
@@ -650,6 +654,7 @@ const styles = {
     fontSize: "18px",
     fontWeight: "500",
     fontFamily: "Poppins",
+    width: "99%",
     width: "95%",
     "&.MuiButtonBase-root:hover": {
       background: "#64cf00",
