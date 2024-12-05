@@ -557,7 +557,8 @@ const EmployeeOrder = () => {
               sx={styles.ButtonCart}
               disabled={orderId === undefined}
             >
-              Confirm Order ₹{orderInfo.scannedAmout}/₹{orderInfo.totalAmount}
+              Confirm Order ₹{orderInfo.scannedAmout}/₹
+              {orderInfo?.totalAmount?.toFixed(2)}
               <ArrowForwardRoundedIcon
                 sx={{ position: "absolute", right: "20px" }}
               />
