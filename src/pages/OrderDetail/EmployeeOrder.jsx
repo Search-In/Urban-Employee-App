@@ -217,7 +217,10 @@ const EmployeeOrder = () => {
             : []
 
           // Check if the product barcode array includes the scanned barcode
-          if (productBarcodes.includes(productBarcode)) {
+          const processedBarcode = productBarcode.includes("#")
+            ? productBarcode.split("#")[0]
+            : productBarcode
+          if (productBarcodes.includes(processedBarcode)) {
             foundProduct = true
 
             if (product.scannedCount >= product.itemCount) {
@@ -236,6 +239,8 @@ const EmployeeOrder = () => {
               console.log("publish ", product?.productId?.weight)
               const newScannedCount = product.scannedCount + 1
               const isScanned = newScannedCount === product.itemCount
+              console.log("newScanned count is ", product + scannedProducts)
+              console.log("is Scanned ", newScannedCount)
               await axios.patch(
                 `${server}/orders/update-scannedCount?orderId=${orderId}&productId=${product.productId._id}`,
                 {
