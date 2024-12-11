@@ -207,7 +207,7 @@ const EmployeeOrder = () => {
   const handleScan = async (barcode) => {
     if (orderId) {
       // Convert the scanned barcode to a string and trim any extra whitespace
-      const productBarcode = String(barcode).trim()
+      const productBarcode = String(barcode).trim().replace(/^0+/, "")
 
       let foundProduct = false
       const updatedProducts = await Promise.all(
@@ -218,9 +218,13 @@ const EmployeeOrder = () => {
 
           // Check if the product barcode array includes the scanned barcode
           const processedBarcode = productBarcode.includes("#")
-            ? productBarcode.split("#")[0]
-            : productBarcode
-          if (productBarcodes.includes(processedBarcode)) {
+            ? productBarcode.split("#")[0].replace(/^0+/, "") // Trim leading zeroes from processedBarcode
+            : productBarcode.replace(/^0+/, "") // Trim leading zeroes from productBarcode
+
+          const normalizedProductBarcodes = productBarcodes.map((b) =>
+            b.replace(/^0+/, "")
+          ) // Trim leading zeroes from all productBarcodes
+          if (normalizedProductBarcodes.includes(processedBarcode)) {
             foundProduct = true
 
             if (product.scannedCount >= product.itemCount) {
@@ -236,6 +240,31 @@ const EmployeeOrder = () => {
             // }
 
             try {
+              // Check if barcode exists in eanCodeScannedCount
+              const eanCodeEntry = product?.eanCodeScannedCount?.find(
+                (item) => item.eanCode === processedBarcode
+              )
+              console.log("eancode entry is ", eanCodeEntry)
+
+              let updatedEanCodeScannedCount
+              if (eanCodeEntry) {
+                // Increment scannedCount for the existing barcode
+                updatedEanCodeScannedCount = product?.eanCodeScannedCount?.map(
+                  (item) =>
+                    item.eanCode === processedBarcode
+                      ? { ...item, scannedCount: item.scannedCount + 1 }
+                      : item
+                )
+                console.log("eancode entory ", updatedEanCodeScannedCount)
+              } else {
+                // Add new barcode to the array
+                updatedEanCodeScannedCount = [
+                  ...product.eanCodeScannedCount,
+                  { eanCode: processedBarcode, scannedCount: 1 },
+                ]
+                console.log("esles ", updatedEanCodeScannedCount)
+              }
+
               console.log("publish ", product?.productId?.weight)
               const newScannedCount = product.scannedCount + 1
               const isScanned = newScannedCount === product.itemCount
@@ -245,8 +274,9 @@ const EmployeeOrder = () => {
                 `${server}/orders/update-scannedCount?orderId=${orderId}&productId=${product.productId._id}`,
                 {
                   scannedCount: newScannedCount,
+                  eanCodeScannedCount: updatedEanCodeScannedCount,
                   isScanned: isScanned,
-                  code: barcode,
+                  code: productBarcode,
                   rate: product?.productId?.price,
                 },
                 {
@@ -288,6 +318,7 @@ const EmployeeOrder = () => {
               return {
                 ...product,
                 scannedCount: newScannedCount,
+                eanCodeScannedCount: updatedEanCodeScannedCount,
                 isScanned: isScanned,
               }
             } catch (error) {
