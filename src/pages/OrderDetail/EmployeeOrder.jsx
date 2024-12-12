@@ -204,34 +204,180 @@ const EmployeeOrder = () => {
     setOpenSnackbar(true)
   }
 
+  // const handleScan = async (barcode) => {
+  //   if (!orderId) {
+  //     setTimeout(() => {
+  //       setScanResult("")
+  //     }, 2000)
+  //     await getProductByBarcode(barcode)
+  //     return
+  //   }
+  //   // Convert the scanned barcode to a string and trim any extra whitespace
+  //   const productBarcode = String(barcode).trim().replace(/^0+/, "")
+
+  //   let foundProduct = false
+  //   const updatedProducts = await Promise.all(
+  //     allProducts?.map(async (product) => {
+  //       const productBarcodes = Array.isArray(product.productId.barcode)
+  //         ? product.productId.barcode.map((b) => String(b).trim())
+  //         : []
+
+  //       // Check if the product barcode array includes the scanned barcode
+  //       const processedBarcode = productBarcode.includes("#")
+  //         ? productBarcode.split("#")[0].replace(/^0+/, "") // Trim leading zeroes from processedBarcode
+  //         : productBarcode.replace(/^0+/, "") // Trim leading zeroes from productBarcode
+
+  //       const normalizedProductBarcodes = productBarcodes.map((b) =>
+  //         b.replace(/^0+/, "")
+  //       ) // Trim leading zeroes from all productBarcodes
+  //       if (normalizedProductBarcodes.includes(processedBarcode)) {
+  //         foundProduct = true
+
+  //         if (product.scannedCount >= product.itemCount) {
+  //           showWarningSnackbar()
+  //           setScanResult("")
+  //           return product
+  //         }
+  //         // if (isConnected && !product?.productId?.weight) {
+  //         //   setProductInfo(product?.productId)
+  //         //   setOpenLabelCard(true)
+  //         //   setScanResult("")
+  //         //   return product
+  //         // }
+
+  //         try {
+  //           // Check if barcode exists in eanCodeScannedCount
+  //           const eanCodeEntry = product?.eanCodeScannedCount?.find(
+  //             (item) => item.eanCode === processedBarcode
+  //           )
+  //           console.log("eancode entry is ", eanCodeEntry)
+
+  //           let updatedEanCodeScannedCount
+  //           if (eanCodeEntry) {
+  //             // Increment scannedCount for the existing barcode
+  //             updatedEanCodeScannedCount = product?.eanCodeScannedCount?.map(
+  //               (item) =>
+  //                 item.eanCode === processedBarcode
+  //                   ? { ...item, scannedCount: item.scannedCount + 1 }
+  //                   : item
+  //             )
+  //             console.log("eancode entory ", updatedEanCodeScannedCount)
+  //           } else {
+  //             // Add new barcode to the array
+  //             updatedEanCodeScannedCount = [
+  //               ...product.eanCodeScannedCount,
+  //               { eanCode: processedBarcode, scannedCount: 1 },
+  //             ]
+  //             console.log("esles ", updatedEanCodeScannedCount)
+  //           }
+
+  //           const newScannedCount = product.scannedCount + 1
+  //           const isScanned = newScannedCount === product.itemCount
+  //           await axios.patch(
+  //             `${server}/orders/update-scannedCount?orderId=${orderId}&productId=${product.productId._id}`,
+  //             {
+  //               scannedCount: newScannedCount,
+  //               eanCodeScannedCount: updatedEanCodeScannedCount,
+  //               isScanned: isScanned,
+  //               code: productBarcode,
+  //               rate: product?.productId?.price,
+  //             },
+  //             {
+  //               headers: {
+  //                 Authorization: `Bearer ${localStorage.getItem(
+  //                   "accessToken"
+  //                 )}`,
+  //               },
+  //             }
+  //           )
+  //           showProductScan()
+  //           const netWeight = parseFloat(
+  //             localStorage.getItem("virtualcartweight")
+  //           )
+  //           const trolley = localStorage.getItem("trolley")
+  //           const productWeight = product.productId.weight
+  //           const totalWeight = netWeight + productWeight
+  //           localStorage.setItem("virtualcartweight", totalWeight)
+  //           const isTrolleyConnected =
+  //             sessionStorage.getItem("trolleyConnection") === "true"
+  //           console.log("it will not work")
+  //           //it is commented untill the trolley flow
+  //           // if (isTrolleyConnected) {
+  //           //   console.log("publishing the event it might reconnedt")
+  //           //   publish("guestUser/updateVirtualCartWeight", {
+  //           //     virtualWeight: totalWeight,
+  //           //     trolleyId: trolley,
+  //           //   })
+  //           // }
+
+  //           setTimeout(() => {
+  //             setScanResult("")
+  //           }, 3000)
+
+  //           return {
+  //             ...product,
+  //             scannedCount: newScannedCount,
+  //             eanCodeScannedCount: updatedEanCodeScannedCount,
+  //             isScanned: isScanned,
+  //           }
+  //         } catch (error) {
+  //           console.error(error)
+  //           return product
+  //         }
+  //       }
+  //       return product
+  //     })
+  //   )
+
+  //   if (!foundProduct) {
+  //     showProductNotFound()
+  //   }
+  //   setProducts(updatedProducts)
+  // }
+
   const handleScan = async (barcode) => {
-    if (orderId) {
-      // Convert the scanned barcode to a string and trim any extra whitespace
-      const productBarcode = String(barcode).trim().replace(/^0+/, "")
+    if (!orderId) {
+      setTimeout(() => setScanResult(""), 2000)
+      await getProductByBarcode(barcode)
+      return
+    }
+    // Step 1: Process the scanned barcode
+    const productBarcode = String(barcode).trim().replace(/^0+/, "")
 
-      let foundProduct = false
+    try {
+      // Step 2: Check if barcode exists in ProductBatch
+      const productBatch = await getProductBatchByEanCode(productBarcode)
+      console.log("got the product batch ", productBatch)
+      console.log("!productbatch", !productBatch)
+      console.log("productBatch.stock<=0", productBatch.stock)
+      if (!productBatch) {
+        showProductNotFound() // No valid product batch found
+        return
+      }
+
+      // Step 3: Verify if the product exists in the allProducts list
+      const productInList = allProducts.some(
+        (product) => product.productId._id === productBatch.productId
+      )
+
+      if (!productInList) {
+        // If the product is not in the list, show "Product Not Found"
+        showProductNotFound()
+        return
+      }
+
+      // Step 3: Update the product's scanned count in the order
       const updatedProducts = await Promise.all(
-        allProducts?.map(async (product) => {
-          const productBarcodes = Array.isArray(product.productId.barcode)
-            ? product.productId.barcode.map((b) => String(b).trim())
-            : []
-
-          // Check if the product barcode array includes the scanned barcode
-          const processedBarcode = productBarcode.includes("#")
-            ? productBarcode.split("#")[0].replace(/^0+/, "") // Trim leading zeroes from processedBarcode
-            : productBarcode.replace(/^0+/, "") // Trim leading zeroes from productBarcode
-
-          const normalizedProductBarcodes = productBarcodes.map((b) =>
-            b.replace(/^0+/, "")
-          ) // Trim leading zeroes from all productBarcodes
-          if (normalizedProductBarcodes.includes(processedBarcode)) {
-            foundProduct = true
-
+        allProducts.map(async (product) => {
+          if (product.productId._id === productBatch.productId) {
+            console.log("product.productId is ", product.productId._id)
+            console.log("productBatch is ", productBatch.productId)
             if (product.scannedCount >= product.itemCount) {
               showWarningSnackbar()
               setScanResult("")
               return product
             }
+
             // if (isConnected && !product?.productId?.weight) {
             //   setProductInfo(product?.productId)
             //   setOpenLabelCard(true)
@@ -239,10 +385,13 @@ const EmployeeOrder = () => {
             //   return product
             // }
 
+            const newScannedCount = product.scannedCount + 1
+            const isScanned = newScannedCount === product.itemCount
+
             try {
               // Check if barcode exists in eanCodeScannedCount
               const eanCodeEntry = product?.eanCodeScannedCount?.find(
-                (item) => item.eanCode === processedBarcode
+                (item) => item.eanCode === productBarcode
               )
               console.log("eancode entry is ", eanCodeEntry)
 
@@ -251,7 +400,7 @@ const EmployeeOrder = () => {
                 // Increment scannedCount for the existing barcode
                 updatedEanCodeScannedCount = product?.eanCodeScannedCount?.map(
                   (item) =>
-                    item.eanCode === processedBarcode
+                    item.eanCode === productBarcode
                       ? { ...item, scannedCount: item.scannedCount + 1 }
                       : item
                 )
@@ -260,16 +409,13 @@ const EmployeeOrder = () => {
                 // Add new barcode to the array
                 updatedEanCodeScannedCount = [
                   ...product.eanCodeScannedCount,
-                  { eanCode: processedBarcode, scannedCount: 1 },
+                  { eanCode: productBarcode, scannedCount: 1 },
                 ]
                 console.log("esles ", updatedEanCodeScannedCount)
               }
 
-              console.log("publish ", product?.productId?.weight)
               const newScannedCount = product.scannedCount + 1
               const isScanned = newScannedCount === product.itemCount
-              console.log("newScanned count is ", product + scannedProducts)
-              console.log("is Scanned ", newScannedCount)
               await axios.patch(
                 `${server}/orders/update-scannedCount?orderId=${orderId}&productId=${product.productId._id}`,
                 {
@@ -287,18 +433,14 @@ const EmployeeOrder = () => {
                   },
                 }
               )
-
               showProductScan()
               const netWeight = parseFloat(
                 localStorage.getItem("virtualcartweight")
               )
-              console.log("ntwet", netWeight)
-
               const trolley = localStorage.getItem("trolley")
               const productWeight = product.productId.weight
               const totalWeight = netWeight + productWeight
               localStorage.setItem("virtualcartweight", totalWeight)
-
               const isTrolleyConnected =
                 sessionStorage.getItem("trolleyConnection") === "true"
               console.log("it will not work")
@@ -322,6 +464,7 @@ const EmployeeOrder = () => {
                 isScanned: isScanned,
               }
             } catch (error) {
+              console.log("failed to update scanned count ")
               console.error(error)
               return product
             }
@@ -330,15 +473,14 @@ const EmployeeOrder = () => {
         })
       )
 
-      if (!foundProduct) {
-        showProductNotFound()
-      }
       setProducts(updatedProducts)
-    } else {
+    } catch (error) {
+      console.error("Error during barcode processing:", error)
+      showProductNotFound()
+    } finally {
       setTimeout(() => {
         setScanResult("")
-      }, 2000)
-      await getProductByBarcode(barcode)
+      }, 3000)
     }
   }
 
@@ -346,6 +488,20 @@ const EmployeeOrder = () => {
   const allProductsScanned = allProducts?.every(
     (product) => product.scannedCount >= product.itemCount
   )
+
+  const getProductBatchByEanCode = async (eanCode) => {
+    try {
+      const result = await axios.get(`${server}/product-batch/${eanCode}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      })
+      console.log("get product batch by eancode is ", result)
+      return result?.data
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const updateEndScanTime = async () => {
     try {
