@@ -26,6 +26,7 @@ import ScaleIcon from "@mui/icons-material/Scale"
 import TrolleyValues from "./Layout/TrolleyValues"
 import DispatchRequestModal from "./Layout/DispatchRequestModal"
 import { toast, ToastContainer } from "react-toastify"
+import ExpiryOverWriteModal from "../../Components/Employee/ExpiryOverWriteModal/ExpiryOverwriteModal"
 
 const EmployeeOrder = () => {
   const navigate = useNavigate()
@@ -48,11 +49,19 @@ const EmployeeOrder = () => {
   const [productInfo, setProductInfo] = useState("")
   const [openLabeCard, setOpenLabelCard] = useState(false)
   const [isScanning, setIsScanning] = useState(false)
+  const [expireProductData, setIsExpiryProductData] = useState({
+    product: "",
+    expiry: "",
+  })
 
   const [isModalOpen, setModalOpen] = useState(false)
+  const [isExpiryRequestModal, setIsRequestModal] = useState(false)
 
   const handleOpenModal = () => setModalOpen(true)
   const handleCloseModal = () => setModalOpen(false)
+
+  const handleOpenExpiryModal = () => setIsRequestModal(true)
+  const handleCloseExpiryModal = () => setIsRequestModal(false)
 
   const handleConfirm = async () => {
     try {
@@ -335,7 +344,7 @@ const EmployeeOrder = () => {
   //   setProducts(updatedProducts)
   // }
 
-  const handleScan = async (barcode) => {
+  const handleScan = async (barcode, isOverride = false) => {
     if (!orderId) {
       setTimeout(() => setScanResult(""), 2000)
       await getProductByBarcode(barcode)
@@ -343,13 +352,9 @@ const EmployeeOrder = () => {
     }
     // Step 1: Process the scanned barcode
     const productBarcode = String(barcode).trim().replace(/^0+/, "")
-
     try {
       // Step 2: Check if barcode exists in ProductBatch
       const productBatch = await getProductBatchByEanCode(productBarcode)
-      console.log("got the product batch ", productBatch)
-      console.log("!productbatch", !productBatch)
-      console.log("productBatch.stock<=0", productBatch.stock)
       if (!productBatch) {
         showProductNotFound() // No valid product batch found
         return
@@ -370,8 +375,6 @@ const EmployeeOrder = () => {
       const updatedProducts = await Promise.all(
         allProducts.map(async (product) => {
           if (product.productId._id === productBatch.productId) {
-            console.log("product.productId is ", product.productId._id)
-            console.log("productBatch is ", productBatch.productId)
             if (product.scannedCount >= product.itemCount) {
               showWarningSnackbar()
               setScanResult("")
@@ -389,11 +392,10 @@ const EmployeeOrder = () => {
             const isScanned = newScannedCount === product.itemCount
 
             try {
-              // Check if barcode exists in eanCodeScannedCount
+              // Check if barcode exists in eanCodeScannedCounts
               const eanCodeEntry = product?.eanCodeScannedCount?.find(
                 (item) => item.eanCode === productBarcode
               )
-              console.log("eancode entry is ", eanCodeEntry)
 
               let updatedEanCodeScannedCount
               if (eanCodeEntry) {
@@ -401,22 +403,28 @@ const EmployeeOrder = () => {
                 updatedEanCodeScannedCount = product?.eanCodeScannedCount?.map(
                   (item) =>
                     item.eanCode === productBarcode
-                      ? { ...item, scannedCount: item.scannedCount + 1 }
+                      ? {
+                          ...item,
+                          scannedCount: item.scannedCount + 1,
+                          isOverWriteRequest: isOverride,
+                        }
                       : item
                 )
-                console.log("eancode entory ", updatedEanCodeScannedCount)
               } else {
                 // Add new barcode to the array
                 updatedEanCodeScannedCount = [
                   ...product.eanCodeScannedCount,
-                  { eanCode: productBarcode, scannedCount: 1 },
+                  {
+                    eanCode: productBarcode,
+                    scannedCount: 1,
+                    isOverWriteRequest: isOverride,
+                  },
                 ]
-                console.log("esles ", updatedEanCodeScannedCount)
               }
 
               const newScannedCount = product.scannedCount + 1
               const isScanned = newScannedCount === product.itemCount
-              await axios.patch(
+              const updatedData = await axios.patch(
                 `${server}/orders/update-scannedCount?orderId=${orderId}&productId=${product.productId._id}`,
                 {
                   scannedCount: newScannedCount,
@@ -424,6 +432,7 @@ const EmployeeOrder = () => {
                   isScanned: isScanned,
                   code: productBarcode,
                   rate: product?.productId?.price,
+                  isOverWriteRequest: isOverride,
                 },
                 {
                   headers: {
@@ -433,6 +442,7 @@ const EmployeeOrder = () => {
                   },
                 }
               )
+
               showProductScan()
               const netWeight = parseFloat(
                 localStorage.getItem("virtualcartweight")
@@ -464,7 +474,26 @@ const EmployeeOrder = () => {
                 isScanned: isScanned,
               }
             } catch (error) {
-              console.log("failed to update scanned count ")
+              if (
+                error?.response?.data?.message == "No expiry Date" ||
+                error?.response?.data?.message == "Product is expired"
+              ) {
+                // setIsExpiryProductData((prevData) => ({
+                //   ...prevData,
+                //   product: product,
+                //   barcode: barcode,
+                // }))
+                handleExpiryOverwriteOpen(
+                  product,
+                  barcode,
+                  error?.response?.data?.message
+                )
+              }
+              console.log(
+                "failed to update scanned count ",
+                error?.response?.data?.message
+              )
+              console.log("failed product is ", product)
               console.error(error)
               return product
             }
@@ -634,6 +663,22 @@ const EmployeeOrder = () => {
     !allProductsScanned ? handleOpenModal() : handleDispatch()
   }
 
+  const handleExpiryOverwriteOpen = (product, barcode, message) => {
+    setIsRequestModal(true)
+    setIsExpiryProductData((prevData) => ({
+      ...prevData,
+      product: product,
+      barcode: barcode,
+      message: message,
+    }))
+  }
+
+  const handleConfirmExpiryOverwrite = () => {
+    handleScan(expireProductData.barcode, true)
+    setIsExpiryProductData("")
+    setIsRequestModal(false)
+  }
+
   return (
     <>
       <ToastContainer />
@@ -644,6 +689,13 @@ const EmployeeOrder = () => {
           onConfirm={handleConfirm}
           products={scannedProducts}
           isRequestAlreadyExists={isRequestAlreadyExists}
+        />
+        <ExpiryOverWriteModal
+          isOpen={isExpiryRequestModal}
+          onClose={handleCloseExpiryModal}
+          onConfirm={handleConfirmExpiryOverwrite}
+          product={expireProductData.product}
+          message={expireProductData.message}
         />
         {isConnected && <TrolleyValues />}
         <Box sx={styles.header}>
