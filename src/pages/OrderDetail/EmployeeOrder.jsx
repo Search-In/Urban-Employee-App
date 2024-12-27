@@ -520,12 +520,18 @@ const EmployeeOrder = () => {
 
   const getProductBatchByEanCode = async (eanCode) => {
     try {
-      const result = await axios.get(`${server}/product-batch/${eanCode}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      const result = await axios.post(
+        `${server}/product-batch`,
+        {
+          code: eanCode,
         },
-      })
-      console.log("get product batch by eancode is ", result)
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+
       return result?.data
     } catch (error) {
       console.log(error)
