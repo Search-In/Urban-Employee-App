@@ -131,15 +131,15 @@ const EmployeeOrderCard = (props) => {
         onClick={(e) => {
           e.preventDefault()
           // props?.handleOpenModal()
-          props.orderdetails.status === "pending"
-            ? navigate(`/employee-order`, {
-                state: { orderId: props.orderdetails._id },
-              })
-            : null
+          // props.orderdetails.status === "pending"
+          //   ? navigate(`/employee-order`, {
+          //       state: { orderId: props.orderdetails._id },
+          //     })
+          //   : null
 
-          // if (props.orderdetails.status === "pending") {
-          //   props?.handleNavigate(props.orderdetails._id)
-          // }
+          if (props.orderdetails.status === "pending") {
+            props?.handleNavigate(props.orderdetails._id)
+          }
         }}
       >
         <IconButton sx={EditButton}>
@@ -150,15 +150,15 @@ const EmployeeOrderCard = (props) => {
           onClick={(e) => {
             e.preventDefault()
             // props?.handleOpenModal()
-            props.orderdetails.status === "pending"
-              ? navigate(`/employee-order`, {
-                  state: { orderId: props.orderdetails._id },
-                })
-              : null
+            // props.orderdetails.status === "pending"
+            //   ? navigate(`/employee-order`, {
+            //       state: { orderId: props.orderdetails._id },
+            //     })
+            //   : null
 
-            // if (props.orderdetails.status === "pending") {
-            //   props?.handleNavigate(props.orderdetails._id)
-            // }
+            if (props.orderdetails.status === "pending") {
+              props?.handleNavigate(props.orderdetails._id)
+            }
           }}
         >
           <Typography sx={OrderTitle}>
@@ -192,9 +192,9 @@ const EmployeeOrderCard = (props) => {
             onClick={(e) => {
               e.preventDefault()
               // props?.handleOpenModal()
-              navigate(`/employee-order`, {
-                state: { orderId: props.orderdetails._id },
-              })
+              // navigate(`/employee-order`, {
+              //   state: { orderId: props.orderdetails._id },
+              // })
               props?.handleNavigate(props.orderdetails._id)
             }}
           >
