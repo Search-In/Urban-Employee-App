@@ -98,8 +98,8 @@ function TrolleyLink() {
           },
         }
       )
-      console.log("guest uesr login ", result)
-      if (result?.data) {
+
+      if (result?.data?._id) {
         localStorage.setItem("trolley", result?.data?.trolley?._id)
         sessionStorage.setItem("qrCode", scanResult)
         setQrCode(scanResult)
@@ -107,6 +107,7 @@ function TrolleyLink() {
         connect()
       } else {
         toast.error("Something went wrong!")
+        setLoading(false)
       }
     } catch (error) {
       console.log("error is ", error)

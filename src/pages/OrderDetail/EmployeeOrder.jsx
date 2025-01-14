@@ -33,6 +33,7 @@ const EmployeeOrder = () => {
   const location = useLocation()
   const { orderId } = location.state || {}
   const { publish, isConnected } = useMqtt()
+  const trolleyConnection = sessionStorage.getItem("trolleyConnection")
 
   const [isRequestAlreadyExists, setIsRequestAlreadyExists] = useState(false)
   const [scannedProducts, setScannedProducts] = useState([])
@@ -381,12 +382,16 @@ const EmployeeOrder = () => {
               return product
             }
 
-            // if (isConnected && !product?.productId?.weight) {
-            //   setProductInfo(product?.productId)
-            //   setOpenLabelCard(true)
-            //   setScanResult("")
-            //   return product
-            // }
+            if (
+              isConnected &&
+              trolleyConnection &&
+              !product?.productId?.weight
+            ) {
+              setProductInfo(product?.productId)
+              setOpenLabelCard(true)
+              setScanResult("")
+              return product
+            }
 
             const newScannedCount = product.scannedCount + 1
             const isScanned = newScannedCount === product.itemCount
@@ -455,13 +460,13 @@ const EmployeeOrder = () => {
                 sessionStorage.getItem("trolleyConnection") === "true"
               console.log("it will not work")
               //it is commented untill the trolley flow
-              // if (isTrolleyConnected) {
-              //   console.log("publishing the event it might reconnedt")
-              //   publish("guestUser/updateVirtualCartWeight", {
-              //     virtualWeight: totalWeight,
-              //     trolleyId: trolley,
-              //   })
-              // }
+              if (isTrolleyConnected && trolleyConnection) {
+                console.log("publishing the event it might reconnedt")
+                publish("guestUser/updateVirtualCartWeight", {
+                  virtualWeight: totalWeight,
+                  trolleyId: trolley,
+                })
+              }
 
               setTimeout(() => {
                 setScanResult("")
