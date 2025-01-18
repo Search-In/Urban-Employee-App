@@ -1,8 +1,71 @@
 import { Avatar, Box, Paper, Typography } from "@mui/material"
 import verifyIcon from "../../../src/assets/verifyimage.png"
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({
+  product,
+  setDrawerOpen,
+  setSelectedProductBatch,
+  updatedProductBatches,
+}) => {
   const isScanned = product.scannedCount >= product.itemCount
+  // console.log("Setiiing the dats ", product?.batch_scanned_count)
+
+  // const handleOpenBatch = () => {
+  //   const sampleBatchData = product?.batch_scanned_count?.map((item) => ({
+  //     batchCode: item.product_batch.batch,
+  //     scannedCount: item.scannedCount,
+  //     expiry: item.product_batch?.expiry,
+  //     totalScannedCount: item?.scannedCount,
+  //   }))
+  //   setSelectedProductBatch(sampleBatchData)
+
+  //   // Update the global state with the updated data for this product
+  //   setUpdatedProductBatches((prevData) => {
+  //     // Remove existing batch data for this product
+  //     const updatedData = prevData.filter(
+  //       (batch) => batch.productId !== product.productId
+  //     )
+  //     // Add the new data for this product
+  //     return [
+  //       ...updatedData,
+  //       { productId: product.productId, batchData: sampleBatchData },
+  //     ]
+  //   })
+  //   // Open the drawer
+  //   setDrawerOpen(true)
+  // }
+
+  const handleOpenBatch = () => {
+    console.log("updatedproductbatches", updatedProductBatches)
+    console.log("product is ", product)
+
+    // Filter all matching batch data for this product
+    const existingBatchData = updatedProductBatches.filter(
+      (item) => item.productId === product.productId._id
+    )
+
+    console.log("existingBatchData is ", existingBatchData)
+
+    // Ensure the existing batch data is treated as an array or fallback to initial API data
+    const batchDataToUse =
+      existingBatchData.length > 0
+        ? existingBatchData // Use filtered batch data if available
+        : product?.batch_scanned_count?.map((item) => ({
+            batchCode: item.product_batch.batch,
+            scannedCount: item.scannedCount,
+            expiry: item.product_batch?.expiry,
+            totalScannedCount: item?.scannedCount,
+            productId: item.product_batch.productId,
+          })) || [] // Fallback to empty array if no data exists
+
+    console.log("batchto use ", batchDataToUse)
+
+    // Directly set the batch data to the state
+    setSelectedProductBatch(batchDataToUse)
+
+    // Open the drawer
+    setDrawerOpen(true)
+  }
 
   return (
     <Paper
@@ -66,6 +129,7 @@ const ProductCard = ({ product }) => {
             src={verifyIcon}
             alt="Verified"
             sx={styles.verifyIcon}
+            onClick={handleOpenBatch}
           />
         )}
         <Box sx={styles.scannedCountContainer}>

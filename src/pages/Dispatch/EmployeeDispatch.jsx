@@ -15,6 +15,8 @@ import { useLocation, useNavigate } from "react-router-dom"
 import server from "../../Components/server"
 import ProductCard from "../../Components/Employee/ProductCard"
 import { useMqtt } from "../../context/MqttContext"
+// import BatchModal from "../../Components/Employee/BatchModal/BatchModal"
+import BatchDrawer from "../../Components/Employee/BatchDrawer/BatchDrawer"
 
 const EmployeeDispatch = () => {
   const navigate = useNavigate()
@@ -27,6 +29,71 @@ const EmployeeDispatch = () => {
   const employeeData = JSON.parse(data)
   const employeeId = employeeData._id
   const [recipientInfo, setRecipientInfo] = useState({})
+  const [productBatchData, setProductBatchData] = useState([])
+  const [updatedProductBatches, setUpdatedProductBatches] = useState([]) // Tracks updated batch data for all products
+  const [selectedProductBatch, setSelectedProductBatch] = useState([]) // Tracks batch data for the selected product
+
+  const sampleBatchData = [
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+    { batchCode: "BATCH001", scannedCount: 0 },
+    { batchCode: "BATCH002", scannedCount: 0 },
+  ]
+  const sample = [
+    {
+      batchCode: "60",
+      scannedCount: 2,
+      expiry: "2025-09-20T18:30:00.000Z",
+      totalScannedCount: 3,
+    },
+    {
+      batchCode: "61",
+      scannedCount: 1,
+      expiry: "2025-09-20T18:30:00.000Z",
+      totalScannedCount: 3,
+    },
+  ]
+
+  console.log("all updated product batches", updatedProductBatches)
+
+  // State to manage drawer visibility
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  // Function to open the drawer
+  const openDrawer = () => {
+    setDrawerOpen(true)
+  }
+
+  // Function to close the drawer
+  const closeDrawer = () => {
+    setDrawerOpen(false)
+  }
 
   const getOrders = async () => {
     const data = localStorage.getItem("employee")
@@ -158,6 +225,12 @@ const EmployeeDispatch = () => {
         overflowX: "hidden",
       }}
     >
+      <BatchDrawer
+        drawerOpen={drawerOpen}
+        batchData={selectedProductBatch} // Pass data to the BatchDrawer
+        setBatchData={setUpdatedProductBatches}
+        onClose={closeDrawer} // Close drawer when clicking "Confirm" or Close icon
+      />
       <Box sx={header}>
         <IconButton
           edge="start"
@@ -184,7 +257,13 @@ const EmployeeDispatch = () => {
         <Grid container spacing={0}>
           {products.map((product, index) => (
             <Grid item xs={12} key={index}>
-              <ProductCard product={product} />
+              <ProductCard
+                product={product}
+                setDrawerOpen={setDrawerOpen}
+                setSelectedProductBatch={setSelectedProductBatch}
+                productBatchData={productBatchData}
+                updatedProductBatches={updatedProductBatches}
+              />
             </Grid>
           ))}
         </Grid>
