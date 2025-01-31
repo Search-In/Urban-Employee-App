@@ -182,7 +182,6 @@ const EmployeeDispatch = () => {
 
   const handleCloseDrawer = () => {
     setIsDPartnerDrawerOpen(false)
-    navigate("/dispatch-success")
   }
   useEffect(() => {
     getOrders()
@@ -212,6 +211,8 @@ const EmployeeDispatch = () => {
 
   const handleNotDpartner = async () => {
     await handleDispatch()
+    setIsDPartnerDrawerOpen(false)
+    navigate("/dispatch-success")
   }
 
   useEffect(() => {
