@@ -204,6 +204,7 @@ const EmployeeDispatch = () => {
       localStorage.removeItem("trolley")
       sessionStorage.clear()
       await updatedispatchTime()
+      navigate("/dispatch-success")
     } catch (error) {
       console.log(error)
     }
