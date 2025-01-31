@@ -17,6 +17,7 @@ import ProductCard from "../../Components/Employee/ProductCard"
 import { useMqtt } from "../../context/MqttContext"
 // import BatchModal from "../../Components/Employee/BatchModal/BatchModal"
 import BatchDrawer from "../../Components/Employee/BatchDrawer/BatchDrawer"
+import DeliveryPartnerDrawer from "../../Components/Employee/DeliveryPartnerDrawer/DeliveryPartnerDrawer"
 
 const EmployeeDispatch = () => {
   const navigate = useNavigate()
@@ -32,6 +33,8 @@ const EmployeeDispatch = () => {
   const [productBatchData, setProductBatchData] = useState([])
   const [updatedProductBatches, setUpdatedProductBatches] = useState([]) // Tracks updated batch data for all products
   const [selectedProductBatch, setSelectedProductBatch] = useState([]) // Tracks batch data for the selected product
+  const [isDPartnerDrawerOpen, setIsDPartnerDrawerOpen] = useState(false)
+  const [isOrderUpdated, setIsOrderUpdated] = useState(false)
 
   const sampleBatchData = [
     { batchCode: "BATCH001", scannedCount: 0 },
@@ -95,6 +98,27 @@ const EmployeeDispatch = () => {
     setDrawerOpen(false)
   }
 
+  const handleDPartnerConfirm = async (selectedPartnerId) => {
+    try {
+      const response = await axios.patch(
+        `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
+        {
+          deliveryPartnerId: selectedPartnerId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+      console.log("Selected Delivery Partner ID:", selectedPartnerId)
+      setIsDPartnerDrawerOpen(false)
+      setIsOrderUpdated(true)
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   const getOrders = async () => {
     const data = localStorage.getItem("employee")
     const employeeData = JSON.parse(data)
@@ -132,6 +156,7 @@ const EmployeeDispatch = () => {
           },
         }
       )
+      console.log("result.data.id", result)
     } catch (error) {
       console.log(error)
     }
@@ -154,22 +179,39 @@ const EmployeeDispatch = () => {
       console.log(error)
     }
   }
+
+  const handleCloseDrawer = () => {
+    setIsDPartnerDrawerOpen(false)
+    navigate("/dispatch-success")
+  }
   useEffect(() => {
     getOrders()
   }, [])
 
   const handleDispatch = async () => {
-    navigate("/dispatch-success")
-    localStorage.setItem("virtualcartweight", 0)
-    const session = localStorage.getItem("session")
-    publish("guestUser/endSession", { sessionId: session })
-    setIsSessionEnded(true)
-    disconnect()
-    localStorage.removeItem("session")
-    localStorage.removeItem("trolley")
-    sessionStorage.clear()
-    await updatedispatchTime()
-    updateOrderStatus()
+    try {
+      await updateOrderStatus()
+      // setIsDPartnerDrawerOpen(true)
+      const isTrolleyConnected =
+        sessionStorage.getItem("trolleyConnection") === "true"
+      if (isTrolleyConnected) {
+        const session = localStorage.getItem("session")
+        publish("guestUser/endSession", { sessionId: session })
+        setIsSessionEnded(true)
+        disconnect()
+      }
+      localStorage.setItem("virtualcartweight", 0)
+      localStorage.removeItem("session")
+      localStorage.removeItem("trolley")
+      sessionStorage.clear()
+      await updatedispatchTime()
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleNotDpartner = async () => {
+    await handleDispatch()
   }
 
   useEffect(() => {
@@ -310,19 +352,41 @@ const EmployeeDispatch = () => {
           ₹{recipientInfo.scannedAmout}/₹{recipientInfo.totalAmount}
         </Typography>
       </Box>
+
       <Box sx={bottomStickyContainer}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleDispatch}
-          sx={ButtonCart}
-        >
-          Ready For Dispatch
-          <ArrowForwardRoundedIcon
-            sx={{ position: "absolute", right: "20px" }}
-          />
-        </Button>
+        {isOrderUpdated ? (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleDispatch}
+            sx={ButtonCart}
+          >
+            Ready For Dispatch
+            <ArrowForwardRoundedIcon
+              sx={{ position: "absolute", right: "20px" }}
+            />
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setIsDPartnerDrawerOpen(true)}
+            sx={ButtonCart}
+          >
+            Assign Order to Delivery
+            <ArrowForwardRoundedIcon
+              sx={{ position: "absolute", right: "20px" }}
+            />
+          </Button>
+        )}
       </Box>
+
+      <DeliveryPartnerDrawer
+        open={isDPartnerDrawerOpen}
+        onClose={handleCloseDrawer}
+        onConfirm={handleDPartnerConfirm}
+        handleNotDpartner={handleNotDpartner}
+      />
     </Box>
   )
 }
