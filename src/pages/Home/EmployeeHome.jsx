@@ -113,7 +113,7 @@ const EmployeeHome = () => {
           </Toolbar>
         </AppBar>
 
-        <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Container maxWidth="md" sx={{ pb: "64px" }}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={4}>
               <Paper elevation={3} sx={{ padding: 2, textAlign: "center" }}>
@@ -181,6 +181,7 @@ const EmployeeHome = () => {
             </Grid>
           </Grid>
         </Container>
+
         <Dialog
           open={open}
           onClose={handleClose}
