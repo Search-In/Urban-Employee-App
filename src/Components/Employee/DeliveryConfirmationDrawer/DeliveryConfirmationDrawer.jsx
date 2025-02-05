@@ -13,6 +13,9 @@ const DeliveryConfirmationDrawer = ({
   order,
   handleDeliveryConfirm,
 }) => {
+  const data = localStorage.getItem("employee")
+  const employeeData = JSON.parse(data)
+
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [uploadedImage, setUploadedImage] = useState(null)
 
@@ -22,14 +25,26 @@ const DeliveryConfirmationDrawer = ({
     handleDeliveryConfirm(order._id, imageFile)
   }
 
-  // Handle file selection
-  //   const handleImageUpload = (event) => {
-  //     const file = event.target.files[0]
-  //     if (file) {
-  //       const imageUrl = URL.createObjectURL(file)
-  //       setUploadedImage(imageUrl)
-  //     }
-  //   }
+  const handleUpdateImageCaptureTime = async () => {
+    try {
+      const employeeId = employeeData._id
+      const orderId = order._id
+
+      const response = await axios.patch(
+        `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
+        {
+          imageCaptureTime: new Date(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const handleImageupload = async (event, index, main) => {
     if (main) {
@@ -38,13 +53,12 @@ const DeliveryConfirmationDrawer = ({
         images: [file],
         onError: () => toast.error("Image upload failed"),
       })
-      console.log("this is file url", file_url)
+      file_url ? await handleUpdateImageCaptureTime() : null
       setUploadedImage(file_url)
       setImageFile(file_url)
     }
   }
 
-  console.log("details ", order)
   return (
     <>
       <ToastContainer />
