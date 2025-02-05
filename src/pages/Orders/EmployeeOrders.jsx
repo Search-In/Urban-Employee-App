@@ -77,6 +77,8 @@ const Orders = (props) => {
   const [currentOrderId, setCurrentOrderId] = useState(null)
   const [orderDetail, setOrderDetail] = useState({})
   const [loading, setLoading] = useState(false)
+  const [isDeliveryStarted, setIsDeliveryStarted] = useState(false)
+  const [deliveryImage, setDeliveryImage] = useState([])
 
   const [value, setValue] = useState(
     location?.state?.value ? location?.state?.value : 0
@@ -106,9 +108,11 @@ const Orders = (props) => {
     setModalOpen(true)
   }
 
-  const handleOpenDeliveryDrawer = (order) => {
+  const handleOpenDeliveryDrawer = (order, selected, deliveryImage) => {
     setOrderDetail(order)
-    setDrawerOpen(true)
+    setIsDeliveryStarted(true)
+    setDeliveryImage(deliveryImage)
+    setDrawerOpen(selected)
   }
 
   const getOrders = async () => {
@@ -152,9 +156,6 @@ const Orders = (props) => {
       )
 
       const order = result.data
-      if (imageFile != "" && order) {
-        await handleImageUpload(imageFile, order._id)
-      }
       if (order) {
         await handleDeliveryEndTime(order._id)
       }
@@ -164,23 +165,6 @@ const Orders = (props) => {
       console.log(error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleImageUpload = async (imageFile, orderId) => {
-    try {
-      const employeeId = employeeData._id
-      const response = await axios.patch(
-        `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
-        { imageUrl: [imageFile] },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      )
-    } catch (error) {
-      console.log(error)
     }
   }
 
@@ -276,6 +260,8 @@ const Orders = (props) => {
                             handleOpenModal={handleOpenModal}
                             handleNavigate={handleNavigate}
                             getOrders={getOrders}
+                            setIsDeliveryStarted={setIsDeliveryStarted}
+                            deliveryImage={currorder?.imageUrl}
                             sx={{ padding: "50px" }}
                           />
                         )
@@ -293,7 +279,6 @@ const Orders = (props) => {
                   },
                 }}
               >
-                {console.log("this", orders)}
                 {orders &&
                   orders?.map((currorder, i) => {
                     return (
@@ -305,6 +290,8 @@ const Orders = (props) => {
                           deliveryPartnerId={currorder?.deliveryPartnerId}
                           deliveryStartTime={currorder?.deliveryStartTime}
                           getOrders={getOrders}
+                          setIsDeliveryStarted={setIsDeliveryStarted}
+                          deliveryImage={currorder?.imageUrl}
                         />
                       )
                     )
@@ -326,7 +313,9 @@ const Orders = (props) => {
                           handleNavigate={handleNavigate}
                           handleOpenDeliveryDrawer={handleOpenDeliveryDrawer}
                           deliveryStartTime={currorder.deliveryStartTime}
+                          deliveryImage={currorder?.imageUrl}
                           getOrders={getOrders}
+                          setIsDeliveryStarted={setIsDeliveryStarted}
                           sx={{ padding: "50px" }}
                         />
                       </Box>
@@ -341,12 +330,21 @@ const Orders = (props) => {
           onClose={handleCloseModal}
           onConfirm={handleConfirm}
         />
-        <DeliveryConfirmationDrawer
-          open={isDrawerOpen}
-          onClose={() => setDrawerOpen(false)}
-          order={orderDetail}
-          handleDeliveryConfirm={handleDeliveryConfirm}
-        />
+        {deliveryImage.length > 0 && (
+          <DeliveryConfirmationDrawer
+            open={isDrawerOpen}
+            onClose={() => {
+              setDrawerOpen(false)
+              setIsDeliveryStarted(false)
+              setDeliveryImage("")
+              setOrderDetail("")
+            }}
+            order={orderDetail}
+            deliveryImage={deliveryImage}
+            handleDeliveryConfirm={handleDeliveryConfirm}
+            isDeliveryStarted={isDeliveryStarted}
+          />
+        )}
       </Box>
     </>
   )
