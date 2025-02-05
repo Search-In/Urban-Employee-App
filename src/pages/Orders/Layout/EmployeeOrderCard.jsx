@@ -158,6 +158,7 @@ const EmployeeOrderCard = (props) => {
           },
         }
       )
+      props?.setIsDeliveryStarted(true)
       setIsConfrimModal(false)
       props.getOrders()
     } catch (error) {
@@ -208,7 +209,11 @@ const EmployeeOrderCard = (props) => {
               props.orderdetails.status === "inprogress" &&
               employeeData.role === "DELIVERY"
             ) {
-              props?.handleOpenDeliveryDrawer(props.orderdetails)
+              props?.handleOpenDeliveryDrawer(
+                props.orderdetails,
+                selected,
+                props.deliveryImage
+              )
             } else if (
               props.orderdetails.status === "inprogress" &&
               employeeData.role === "PICKER"

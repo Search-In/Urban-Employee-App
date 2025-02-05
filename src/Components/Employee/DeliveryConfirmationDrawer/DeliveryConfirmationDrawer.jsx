@@ -6,23 +6,46 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload"
 import ConfirmDeliveryModal from "./ConfirmDeliveryModal"
 import handleImageUpload from "../../../utils/handleImageUpload"
 import { toast, ToastContainer } from "react-toastify"
+import axios from "axios"
+import server from "../../server"
 
 const DeliveryConfirmationDrawer = ({
   open,
   onClose,
   order,
+  deliveryImage,
+  isDeliveryStarted,
   handleDeliveryConfirm,
 }) => {
+  console.log("temp[0]", deliveryImage)
   const data = localStorage.getItem("employee")
   const employeeData = JSON.parse(data)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [uploadedImage, setUploadedImage] = useState(null)
+  const [uploadedImage, setUploadedImage] = useState(deliveryImage[0])
 
   const [imageFile, setImageFile] = useState("")
 
   const handleConfirmModal = () => {
     handleDeliveryConfirm(order._id, imageFile)
+  }
+
+  const imageUpload = async (imageFile) => {
+    try {
+      const employeeId = employeeData._id
+      const orderId = order._id
+      const response = await axios.patch(
+        `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
+        { imageUrl: [imageFile] },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const handleUpdateImageCaptureTime = async () => {
@@ -53,7 +76,10 @@ const DeliveryConfirmationDrawer = ({
         images: [file],
         onError: () => toast.error("Image upload failed"),
       })
-      file_url ? await handleUpdateImageCaptureTime() : null
+      if (file_url) {
+        await handleUpdateImageCaptureTime()
+        await imageUpload(file_url)
+      }
       setUploadedImage(file_url)
       setImageFile(file_url)
     }
@@ -113,12 +139,14 @@ const DeliveryConfirmationDrawer = ({
             style={{ display: "none" }}
             id="upload-photo"
             onChange={(event) => handleImageupload(event, 0, true)}
+            disabled={!isDeliveryStarted}
           />
           <label htmlFor="upload-photo">
             <Button
               variant="contained"
               component="span"
               startIcon={<CloudUploadIcon />}
+              disabled={!isDeliveryStarted}
             >
               Upload Photo
             </Button>
@@ -140,7 +168,7 @@ const DeliveryConfirmationDrawer = ({
           fullWidth
           sx={{ mt: 2 }}
           onClick={() => setIsModalOpen(true)}
-          disabled={!imageFile}
+          disabled={!uploadedImage}
         >
           Confirm Delivery
         </Button>
