@@ -136,7 +136,6 @@ const Orders = (props) => {
   }
 
   const handleDeliveryConfirm = async (orderId, imageFile) => {
-    console.log("confirm", orderId)
     setLoading(true)
     try {
       setDrawerOpen(false)
@@ -151,9 +150,13 @@ const Orders = (props) => {
           },
         }
       )
-      console.log("result of order", result)
-      if (imageFile != "") {
-        handleImageUpload(imageFile, result.data._id)
+
+      const order = result.data
+      if (imageFile != "" && order) {
+        await handleImageUpload(imageFile, order._id)
+      }
+      if (order) {
+        await handleDeliveryEndTime(order._id)
       }
       await getOrders()
       setLoading(false)
@@ -170,6 +173,25 @@ const Orders = (props) => {
       const response = await axios.patch(
         `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
         { imageUrl: [imageFile] },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const handleDeliveryEndTime = async (orderId) => {
+    try {
+      const employeeId = employeeData._id
+      const response = await axios.patch(
+        `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
+        {
+          deliveryEndTime: new Date(),
+        },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
