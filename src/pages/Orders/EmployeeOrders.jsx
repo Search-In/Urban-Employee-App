@@ -110,7 +110,7 @@ const Orders = (props) => {
 
   const handleOpenDeliveryDrawer = (order, selected, deliveryImage) => {
     setOrderDetail(order)
-    setIsDeliveryStarted(true)
+    setIsDeliveryStarted(selected)
     setDeliveryImage(deliveryImage)
     setDrawerOpen(true)
   }

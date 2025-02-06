@@ -49,6 +49,8 @@ const EmployeeHome = () => {
           },
         }
       )
+      employeeData.isActive = result?.data?.isActive
+      localStorage.setItem("employee", JSON.stringify(employeeData))
       toast.success("status updated successfully!")
     } catch (error) {
       console.log(error)
