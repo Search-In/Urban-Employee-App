@@ -112,7 +112,7 @@ const Orders = (props) => {
     setOrderDetail(order)
     setIsDeliveryStarted(true)
     setDeliveryImage(deliveryImage)
-    setDrawerOpen(selected)
+    setDrawerOpen(true)
   }
 
   const getOrders = async () => {
@@ -330,7 +330,7 @@ const Orders = (props) => {
           onClose={handleCloseModal}
           onConfirm={handleConfirm}
         />
-        {deliveryImage.length > 0 && (
+        {(deliveryImage.length > 0 || isDrawerOpen) && (
           <DeliveryConfirmationDrawer
             open={isDrawerOpen}
             onClose={() => {
