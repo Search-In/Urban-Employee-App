@@ -136,6 +136,7 @@ const DeliveryConfirmationDrawer = ({
           <input
             type="file"
             accept="image/*"
+            capture="environment" // Forces the camera to open
             style={{ display: "none" }}
             id="upload-photo"
             onChange={(event) => handleImageupload(event, 0, true)}
