@@ -581,26 +581,8 @@ const EmployeeOrder = () => {
   }
 
   useEffect(() => {
-    const updateScanTime = async () => {
-      try {
-        const result = await axios.patch(
-          `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
-          {
-            startScanTime: new Date(),
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            },
-          }
-        )
-      } catch (error) {
-        console.log(error)
-      }
-    }
     if (orderId) {
       getOrders()
-      updateScanTime()
     }
   }, [])
 

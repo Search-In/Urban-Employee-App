@@ -172,6 +172,25 @@ const EmployeeOrderCard = (props) => {
       props?.handleOpenModal()
     }
   }
+
+  const updateScanTime = async () => {
+    try {
+      const result = await axios.patch(
+        `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
+        {
+          startScanTime: new Date(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+        }
+      )
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <>
       <Box
@@ -308,6 +327,7 @@ const EmployeeOrderCard = (props) => {
                   e.preventDefault()
                   setOrderId(props.orderdetails._id)
                   setIsConfrimModal(true)
+                  updateScanTime()
                 }}
               >
                 Start
