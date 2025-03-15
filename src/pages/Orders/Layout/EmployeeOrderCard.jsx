@@ -119,7 +119,6 @@ const EmployeeOrderCard = (props) => {
     try {
       const employeeId = employeeData._id
       const orderId = props.orderdetails._id
-      console.log("props.orderdeails", props.orderdetails)
       const response = await axios.patch(
         `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
         {
@@ -175,6 +174,8 @@ const EmployeeOrderCard = (props) => {
 
   const updateScanTime = async () => {
     try {
+      const employeeId = employeeData._id
+      const orderId = props.orderdetails._id
       const result = await axios.patch(
         `${server}/update-employee-order/employeeOrder?employeeId=${employeeId}&orderId=${orderId}`,
         {
@@ -216,15 +217,18 @@ const EmployeeOrderCard = (props) => {
           onClick={(e) => {
             e.preventDefault()
             // props?.handleOpenModal()
-            // props.orderdetails.status === "pending"
-            //   ? navigate(`/employee-order`, {
-            //       state: { orderId: props.orderdetails._id },
-            //     })
-            //   : null
+            props.orderdetails.status === "pending"
+              ? navigate(`/employee-order`, {
+                  state: { orderId: props.orderdetails._id },
+                })
+              : null
+            updateScanTime()
 
-            if (props.orderdetails.status === "pending") {
-              props?.handleNavigate(props.orderdetails._id)
-            } else if (
+            // if (props.orderdetails.status === "pending") {
+            //   updateScanTime()
+            //   props?.handleNavigate(props.orderdetails._id)
+            // }
+            if (
               props.orderdetails.status === "inprogress" &&
               employeeData.role === "DELIVERY"
             ) {
@@ -263,6 +267,7 @@ const EmployeeOrderCard = (props) => {
 
               if (props.orderdetails.status === "pending") {
                 props?.handleNavigate(props.orderdetails._id)
+                updateScanTime()
               }
             }}
           >
@@ -308,11 +313,12 @@ const EmployeeOrderCard = (props) => {
               sx={buttonProductCard}
               onClick={(e) => {
                 e.preventDefault()
-                // props?.handleOpenModal()
-                // navigate(`/employee-order`, {
-                //   state: { orderId: props.orderdetails._id },
-                // })
-                props?.handleNavigate(props.orderdetails._id)
+                props?.handleOpenModal()
+                navigate(`/employee-order`, {
+                  state: { orderId: props.orderdetails._id },
+                })
+                // props?.handleNavigate(props.orderdetails._id)
+                updateScanTime()
               }}
             >
               Start
@@ -327,7 +333,6 @@ const EmployeeOrderCard = (props) => {
                   e.preventDefault()
                   setOrderId(props.orderdetails._id)
                   setIsConfrimModal(true)
-                  updateScanTime()
                 }}
               >
                 Start
