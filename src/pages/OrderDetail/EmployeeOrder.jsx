@@ -403,6 +403,8 @@ const EmployeeOrder = () => {
               )
 
               let updatedEanCodeScannedCount
+              const currentTimestamp = new Date()
+
               if (eanCodeEntry) {
                 // Increment scannedCount for the existing barcode
                 updatedEanCodeScannedCount = product?.eanCodeScannedCount?.map(
@@ -412,6 +414,10 @@ const EmployeeOrder = () => {
                           ...item,
                           scannedCount: item.scannedCount + 1,
                           isOverWriteRequest: isOverride,
+                          scannedAt: [
+                            ...(item.scannedAt || []),
+                            currentTimestamp,
+                          ],
                         }
                       : item
                 )
@@ -423,6 +429,7 @@ const EmployeeOrder = () => {
                     eanCode: productBarcode,
                     scannedCount: 1,
                     isOverWriteRequest: isOverride,
+                    scannedAt: [currentTimestamp],
                   },
                 ]
               }
