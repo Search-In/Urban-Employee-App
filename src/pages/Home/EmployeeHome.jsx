@@ -29,14 +29,15 @@ const EmployeeHome = () => {
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const data = localStorage.getItem("employee")
-  const employeeData = JSON.parse(data)
+  const employeeData = data ? JSON.parse(data) : {}
   const [isToggled, setIsToggled] = useState(employeeData.isActive)
+  const [isLoading, setIsLoading] = useState(false)
 
   const handleToggle = async (event) => {
+    const value = event.target.checked
+    setIsLoading(true)
     try {
       const employeeId = employeeData._id
-      const value = event.target.checked
-      setIsToggled(value)
       console.log("Switch toggled:", event.target.checked)
       const result = await axios.patch(
         `${server}/employees/update/${employeeId}`,
@@ -49,12 +50,19 @@ const EmployeeHome = () => {
           },
         }
       )
-      employeeData.isActive = result?.data?.isActive
-      localStorage.setItem("employee", JSON.stringify(employeeData))
+      setIsToggled(result.data.isActive)
+      const updatedEmployeeData = {
+        ...employeeData,
+        isActive: result.data.isActive,
+      }
+      localStorage.setItem("employee", JSON.stringify(updatedEmployeeData))
       toast.success("status updated successfully!")
     } catch (error) {
       console.log(error)
       toast.error("failed to updated status")
+      setIsToggled(!value)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -156,7 +164,7 @@ const EmployeeHome = () => {
                   {employeeData?.position || "Employee"}
                 </Typography>
 
-                {employeeData?.role == "DELIVERY" && (
+                {employeeData?.role === "DELIVERY" && (
                   <Typography
                     variant="body1"
                     sx={{ display: "flex", alignItems: "center" }}
@@ -168,6 +176,7 @@ const EmployeeHome = () => {
                           checked={isToggled}
                           onChange={handleToggle}
                           color="primary"
+                          disabled={isLoading}
                         />
                       }
                       label={isToggled ? "present" : "absent"}
