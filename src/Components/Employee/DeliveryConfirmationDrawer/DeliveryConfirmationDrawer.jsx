@@ -8,6 +8,7 @@ import handleImageUpload from "../../../utils/handleImageUpload"
 import { toast, ToastContainer } from "react-toastify"
 import axios from "axios"
 import server from "../../server"
+import Compressor from "compressorjs"
 
 const DeliveryConfirmationDrawer = ({
   open,
@@ -114,25 +115,56 @@ const DeliveryConfirmationDrawer = ({
     })
   }
 
-  // Use in your function
+  // // Use in your function
+  // const handleImageupload = async (event, index, main) => {
+  //   if (main) {
+  //     const file = event.target.files[0]
+
+  //     const resizedFile = await resizeImage(file)
+
+  //     const file_url = await handleImageUpload({
+  //       images: [resizedFile],
+  //       onError: () => toast.error("Image upload failed"),
+  //     })
+
+  //     if (file_url) {
+  //       await handleUpdateImageCaptureTime()
+  //       await imageUpload(file_url)
+  //     }
+
+  //     setUploadedImage(file_url)
+  //     setImageFile(file_url)
+  //   }
+  // }
+
   const handleImageupload = async (event, index, main) => {
     if (main) {
       const file = event.target.files[0]
 
-      const resizedFile = await resizeImage(file)
+      // Compress image before upload
+      new Compressor(file, {
+        quality: 0.6, // 0.1 (high compression) to 1.0 (low compression)
+        maxWidth: 1024, // Resize width (optional)
+        maxHeight: 1024, // Resize height (optional)
+        success: async (compressedFile) => {
+          const file_url = await handleImageUpload({
+            images: [compressedFile],
+            onError: () => toast.error("Image upload failed"),
+          })
 
-      const file_url = await handleImageUpload({
-        images: [resizedFile],
-        onError: () => toast.error("Image upload failed"),
+          if (file_url) {
+            await handleUpdateImageCaptureTime()
+            await imageUpload(file_url)
+          }
+
+          setUploadedImage(file_url)
+          setImageFile(file_url)
+        },
+        error: (err) => {
+          console.error("Compression Error:", err)
+          toast.error("Failed to compress image")
+        },
       })
-
-      if (file_url) {
-        await handleUpdateImageCaptureTime()
-        await imageUpload(file_url)
-      }
-
-      setUploadedImage(file_url)
-      setImageFile(file_url)
     }
   }
 
