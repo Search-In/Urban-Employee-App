@@ -26,6 +26,7 @@ const DeliveryConfirmationDrawer = ({
   const [uploadedImage, setUploadedImage] = useState(deliveryImage[0])
 
   const [imageFile, setImageFile] = useState("")
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const handleConfirmModal = () => {
     handleDeliveryConfirm(order._id, imageFile)
@@ -168,6 +169,103 @@ const DeliveryConfirmationDrawer = ({
     }
   }
 
+  const handleImageCapture = async (event) => {
+    if (!event.target.files || !event.target.files[0]) return
+
+    setIsProcessing(true)
+    const file = event.target.files[0]
+
+    try {
+      // Step 1: Immediately create a preview URL to release the camera resource
+      const previewUrl = URL.createObjectURL(file)
+
+      // Step 2: Process in chunks with timeouts to prevent memory overload
+      const processedFile = await processImageInChunks(file)
+
+      // Step 3: Upload the processed file
+      const file_url = await handleImageUpload({
+        images: [processedFile],
+        onError: () => toast.error("Upload failed"),
+      })
+
+      if (file_url) {
+        await Promise.all([
+          handleUpdateImageCaptureTime(),
+          imageUpload(file_url),
+        ])
+        setUploadedImage(file_url)
+        setImageFile(file_url)
+      }
+
+      // Clean up
+      URL.revokeObjectURL(previewUrl)
+    } catch (error) {
+      console.error("Image processing error:", error)
+      toast.error(
+        "Failed to process image. Try again or use a lower resolution."
+      )
+    } finally {
+      setIsProcessing(false)
+      // Clear the input to allow retries
+      event.target.value = ""
+    }
+  }
+
+  const processImageInChunks = (file) => {
+    return new Promise((resolve) => {
+      // Use a simple downscaling approach instead of heavy compression
+      const img = new Image()
+      const url = URL.createObjectURL(file)
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas")
+        const maxSize = 800 // Target size for mobile
+
+        // Calculate new dimensions
+        let width = img.width
+        let height = img.height
+        if (width > height) {
+          if (width > maxSize) {
+            height *= maxSize / width
+            width = maxSize
+          }
+        } else {
+          if (height > maxSize) {
+            width *= maxSize / height
+            height = maxSize
+          }
+        }
+
+        canvas.width = width
+        canvas.height = height
+
+        // Draw in steps with timeouts
+        setTimeout(() => {
+          const ctx = canvas.getContext("2d")
+          ctx.drawImage(img, 0, 0, width, height)
+
+          setTimeout(() => {
+            canvas.toBlob(
+              (blob) => {
+                resolve(
+                  new File([blob], file.name, {
+                    type: "image/jpeg",
+                    lastModified: Date.now(),
+                  })
+                )
+                URL.revokeObjectURL(url)
+              },
+              "image/jpeg",
+              0.7
+            )
+          }, 100)
+        }, 100)
+      }
+
+      img.src = url
+    })
+  }
+
   return (
     <>
       <ToastContainer />
@@ -222,7 +320,8 @@ const DeliveryConfirmationDrawer = ({
             capture="environment" // Forces the camera to open
             style={{ display: "none" }}
             id="upload-photo"
-            onChange={(event) => handleImageupload(event, 0, true)}
+            // onChange={(event) => handleImageupload(event, 0, true)}
+            onChange={handleImageCapture}
             disabled={!isDeliveryStarted}
           />
           <label htmlFor="upload-photo">
@@ -230,9 +329,9 @@ const DeliveryConfirmationDrawer = ({
               variant="contained"
               component="span"
               startIcon={<CloudUploadIcon />}
-              disabled={!isDeliveryStarted}
+              disabled={!isDeliveryStarted || isProcessing}
             >
-              Upload Photo
+              {isProcessing ? "Processing..." : "Upload Photo"}
             </Button>
           </label>
         </Box>
