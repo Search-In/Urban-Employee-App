@@ -69,17 +69,68 @@ const DeliveryConfirmationDrawer = ({
     }
   }
 
+  const resizeImage = (
+    file,
+    maxWidth = 1024,
+    maxHeight = 1024,
+    quality = 0.6
+  ) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.onload = (event) => {
+        const img = new Image()
+        img.src = event.target.result
+        img.onload = () => {
+          const canvas = document.createElement("canvas")
+          const ctx = canvas.getContext("2d")
+
+          let width = img.width
+          let height = img.height
+
+          if (width > maxWidth || height > maxHeight) {
+            if (width > height) {
+              height *= maxWidth / width
+              width = maxWidth
+            } else {
+              width *= maxHeight / height
+              height = maxHeight
+            }
+          }
+
+          canvas.width = width
+          canvas.height = height
+          ctx.drawImage(img, 0, 0, width, height)
+
+          canvas.toBlob(
+            (blob) => {
+              resolve(new File([blob], file.name, { type: file.type }))
+            },
+            file.type,
+            quality
+          )
+        }
+      }
+    })
+  }
+
+  // Use in your function
   const handleImageupload = async (event, index, main) => {
     if (main) {
       const file = event.target.files[0]
+
+      const resizedFile = await resizeImage(file)
+
       const file_url = await handleImageUpload({
-        images: [file],
+        images: [resizedFile],
         onError: () => toast.error("Image upload failed"),
       })
+
       if (file_url) {
         await handleUpdateImageCaptureTime()
         await imageUpload(file_url)
       }
+
       setUploadedImage(file_url)
       setImageFile(file_url)
     }
