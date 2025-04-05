@@ -445,6 +445,7 @@ const EmployeeOrder = () => {
                   code: productBarcode,
                   rate: product?.productId?.price,
                   isOverWriteRequest: isOverride,
+                  employeeId: employeeId,
                 },
                 {
                   headers: {
