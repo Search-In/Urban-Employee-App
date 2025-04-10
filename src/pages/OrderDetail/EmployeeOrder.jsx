@@ -657,6 +657,7 @@ const EmployeeOrder = () => {
       setIsRequestAlreadyExists(true)
     }
     if (orderInfo?.dispatchStatus === "accepted") {
+      await updateEndScanTime()
       navigate("/employee-dispatch", {
         state: { orderId: orderId },
       })
