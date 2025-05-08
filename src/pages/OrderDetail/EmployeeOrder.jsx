@@ -10,6 +10,8 @@ import {
   Snackbar,
   Typography,
   Fab,
+  Backdrop,
+  CircularProgress,
 } from "@mui/material"
 import axios from "axios"
 import { useEffect, useState } from "react"
@@ -27,6 +29,7 @@ import TrolleyValues from "./Layout/TrolleyValues"
 import DispatchRequestModal from "./Layout/DispatchRequestModal"
 import { toast, ToastContainer } from "react-toastify"
 import ExpiryOverWriteModal from "../../Components/Employee/ExpiryOverWriteModal/ExpiryOverwriteModal"
+import ScannerModeSelector from "./Layout/ScanModeSelector"
 
 const EmployeeOrder = () => {
   const navigate = useNavigate()
@@ -34,6 +37,9 @@ const EmployeeOrder = () => {
   const { orderId } = location.state || {}
   const { publish, isConnected } = useMqtt()
   const trolleyConnection = sessionStorage.getItem("trolleyConnection")
+  const [mode, setMode] = useState("bulk")
+  const [labelCode, setLabelCode] = useState("")
+  const [loading, setLoading] = useState(false)
 
   const [isRequestAlreadyExists, setIsRequestAlreadyExists] = useState(false)
   const [scannedProducts, setScannedProducts] = useState([])
@@ -94,20 +100,48 @@ const EmployeeOrder = () => {
 
   const getProductByBarcode = async (barcode) => {
     try {
+      setLoading(true)
+      if (
+        mode === "bulk" &&
+        (!labelCode || labelCode.trim() === "" || labelCode.trim() === "---")
+      ) {
+        showLableCodeIsEmpty()
+        return
+      }
+
       setOpenLabelCard(false)
-      const result = await axios.get(`${server}/products/barcode/${barcode}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      })
-      if (result?.data.length > 0) {
-        setProductInfo(result.data[0])
-        setOpenLabelCard(true)
+      const result = await axios.post(
+        `${server}/products/barcode/search`,
+        { code: barcode },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+            "Content-Type": "application/json", // Optional but good to include
+          },
+        }
+      )
+      const product = result?.data
+      if (product) {
+        if (mode == "bulk") {
+          console.log("update", product)
+          onLabelCodeChange(
+            product._id,
+            labelCode,
+            product?.weight,
+            product?.barcode
+          )
+          showLabelCodeUpdated()
+        } else {
+          setProductInfo(result.data)
+          setOpenLabelCard(true)
+        }
       } else {
         showProductNotFound()
       }
     } catch (error) {
       console.log(error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -211,6 +245,18 @@ const EmployeeOrder = () => {
   const showTurnedOffCamera = () => {
     setSnackbarMessage("Please Turned Off the Camera")
     setSnackbarSeverity("warning")
+    setOpenSnackbar(true)
+  }
+
+  const showLabelCodeUpdated = () => {
+    setSnackbarMessage("Labelcode Updated Successfully!")
+    setSnackbarSeverity("success")
+    setOpenSnackbar(true)
+  }
+
+  const showLableCodeIsEmpty = () => {
+    setSnackbarMessage("Enter Valid Labelcod!")
+    setSnackbarSeverity("error")
     setOpenSnackbar(true)
   }
 
@@ -752,7 +798,17 @@ const EmployeeOrder = () => {
 
         {/* Bottom Half: Product Cards */}
         <div style={styles.bottomHalf}>
-          {!orderId && <Instructions />}
+          {!orderId && (
+            <>
+              <Instructions />{" "}
+              <ScannerModeSelector
+                mode={mode}
+                setMode={setMode}
+                labelCode={labelCode}
+                setLabelCode={setLabelCode}
+              />
+            </>
+          )}
           {openLabeCard && (
             <>
               <div style={styles.overlay}></div>
@@ -827,6 +883,12 @@ const EmployeeOrder = () => {
           </Alert>
         </Snackbar>
       </div>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </>
   )
 }
