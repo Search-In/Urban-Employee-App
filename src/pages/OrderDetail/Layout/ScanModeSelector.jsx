@@ -16,16 +16,15 @@ const ScannerModeSelector = ({ mode, setMode, labelCode, setLabelCode }) => {
   const [rack, setRack] = useState("")
   const [shelf, setShelf] = useState("")
 
+  const areaNoRef = useRef(null)
   const bayNoRef = useRef(null)
   const rackRef = useRef(null)
   const shelfRef = useRef(null)
 
   const handleKeyPress = (e, nextFieldRef) => {
-    if (e.key === "Enter" || e.target.value.length === e.target.maxLength) {
+    if (e.key === "Enter") {
       e.preventDefault()
-      if (nextFieldRef && nextFieldRef.current) {
-        nextFieldRef.current.focus()
-      }
+      nextFieldRef.current?.focus()
     }
   }
 
@@ -84,6 +83,7 @@ const ScannerModeSelector = ({ mode, setMode, labelCode, setLabelCode }) => {
               onChange={(e) => setArea(e.target.value.toUpperCase())}
               onKeyDown={(e) => handleKeyPress(e, bayNoRef)}
               inputProps={{ maxLength: 1 }}
+              inputRef={areaNoRef}
             />
             <Typography variant="h6">-</Typography>
             <TextField
