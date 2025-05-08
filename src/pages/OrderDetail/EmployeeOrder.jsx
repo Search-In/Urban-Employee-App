@@ -800,7 +800,7 @@ const EmployeeOrder = () => {
         <div style={styles.bottomHalf}>
           {!orderId && (
             <>
-              <Instructions />{" "}
+              {/* <Instructions /> */}
               <ScannerModeSelector
                 mode={mode}
                 setMode={setMode}
